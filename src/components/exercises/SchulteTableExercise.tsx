@@ -13,10 +13,18 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
+const FONT_SIZE_OPTIONS = [
+  { label: 'S', value: 16 },
+  { label: 'M', value: 20 },
+  { label: 'L', value: 26 },
+  { label: 'XL', value: 32 },
+];
+
 const SchulteTableExercise = () => {
   const navigate = useNavigate();
 
   const [gridSize, setGridSize] = useState(5);
+  const [fontSize, setFontSize] = useState(20);
   const [phase, setPhase] = useState<'settings' | 'playing' | 'results'>('settings');
   const [numbers, setNumbers] = useState<number[]>([]);
   const [nextNumber, setNextNumber] = useState(1);
@@ -151,6 +159,27 @@ const SchulteTableExercise = () => {
                   </div>
                 </div>
 
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground block mb-3">
+                    Розмір шрифта
+                  </label>
+                  <div className="flex gap-2">
+                    {FONT_SIZE_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setFontSize(opt.value)}
+                        className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                          fontSize === opt.value
+                            ? 'bg-accent text-accent-foreground'
+                            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <button
                   onClick={startGame}
                   className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
@@ -190,9 +219,9 @@ const SchulteTableExercise = () => {
                       key={index}
                       onClick={() => handleCellClick(num, index)}
                       disabled={isClicked}
+                      style={{ fontSize: `${fontSize}px` }}
                       className={`
                         aspect-square rounded-xl font-bold transition-all duration-200 select-none
-                        ${gridSize <= 4 ? 'text-2xl' : gridSize <= 5 ? 'text-xl' : 'text-base'}
                         ${isClicked
                           ? 'bg-primary/20 text-primary/40 scale-95'
                           : isWrong

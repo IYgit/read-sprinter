@@ -12,12 +12,19 @@ interface RoundResult {
   digitCount: number;
 }
 
+const FONT_SIZE_OPTIONS = [
+  { label: 'M', value: 48 },
+  { label: 'L', value: 60 },
+  { label: 'XL', value: 72 },
+];
+
 const NumbersExercise = () => {
   const navigate = useNavigate();
 
   // Settings
   const [digitCount, setDigitCount] = useState(3);
   const [displayTime, setDisplayTime] = useState(1000); // ms
+  const [fontSize, setFontSize] = useState(60);
 
   // Game state
   const [phase, setPhase] = useState<'settings' | 'playing' | 'results'>('settings');
@@ -255,6 +262,28 @@ const NumbersExercise = () => {
                 ))}
               </div>
             </div>
+
+            {/* Font size */}
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-3">
+                Розмір шрифта
+              </label>
+              <div className="flex gap-2">
+                {FONT_SIZE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setFontSize(opt.value)}
+                    className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
+                      fontSize === opt.value
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <button onClick={startGame} className="btn-primary w-full flex items-center justify-center gap-2 text-lg">
@@ -304,7 +333,10 @@ const NumbersExercise = () => {
           }`}
         >
           {showNumber ? (
-            <span className="font-mono text-5xl lg:text-6xl font-bold text-primary tracking-widest animate-fade-in-up">
+            <span
+              style={{ fontSize: `${fontSize}px` }}
+              className="font-mono font-bold text-primary tracking-widest animate-fade-in-up"
+            >
               {currentNumber}
             </span>
           ) : feedback === 'correct' ? (

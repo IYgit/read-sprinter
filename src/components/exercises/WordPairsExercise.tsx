@@ -35,6 +35,12 @@ const SAME_WORDS: string[] = [
   'медаль', 'океан', 'парасон', 'вулкан', 'магніт', 'орбіта',
 ];
 
+const FONT_SIZE_OPTIONS = [
+  { label: 'S', value: 12 },
+  { label: 'M', value: 14 },
+  { label: 'L', value: 18 },
+];
+
 function generateGrid(rows: number, cols: number, diffRatio: number): CellState[][] {
   const totalCells = rows * cols;
   const diffCount = Math.floor(totalCells * diffRatio);
@@ -77,6 +83,7 @@ const WordPairsExercise = () => {
   const [rows, setRows] = useState(4);
   const [cols, setCols] = useState(4);
   const [timeLimit, setTimeLimit] = useState(60);
+  const [fontSize, setFontSize] = useState(14);
   const [phase, setPhase] = useState<'settings' | 'playing' | 'results'>('settings');
   const [grid, setGrid] = useState<CellState[][]>([]);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -222,6 +229,27 @@ const WordPairsExercise = () => {
                 ))}
               </div>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-3">
+                Розмір шрифта
+              </label>
+              <div className="flex gap-2">
+                {FONT_SIZE_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setFontSize(opt.value)}
+                    className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
+                      fontSize === opt.value
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <button onClick={startGame} className="btn-primary w-full flex items-center justify-center gap-2 text-lg">
@@ -327,9 +355,9 @@ const WordPairsExercise = () => {
                   cell.selected ? 'cursor-default' : 'cursor-pointer'
                 }`}
               >
-                <span className="block text-sm font-medium leading-relaxed">{cell.pair.word1}</span>
+                <span className="block font-medium leading-relaxed" style={{ fontSize: `${fontSize}px` }}>{cell.pair.word1}</span>
                 <span className="block w-8 h-px bg-border mx-auto my-1" />
-                <span className="block text-sm font-medium leading-relaxed">{cell.pair.word2}</span>
+                <span className="block font-medium leading-relaxed" style={{ fontSize: `${fontSize}px` }}>{cell.pair.word2}</span>
               </button>
             );
           })

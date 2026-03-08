@@ -5,6 +5,12 @@ import { readingTexts, ReadingText } from '@/data/texts';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
 
+const FONT_SIZE_OPTIONS = [
+  { label: 'M', value: 28 },
+  { label: 'L', value: 36 },
+  { label: 'XL', value: 44 },
+];
+
 const RsvpExercise = () => {
   const navigate = useNavigate();
 
@@ -12,6 +18,7 @@ const RsvpExercise = () => {
   const [syntagmWidth, setSyntagmWidth] = useState(1);
   const [displayTime, setDisplayTime] = useState(300);
   const [selectedText, setSelectedText] = useState<ReadingText | null>(null);
+  const [fontSize, setFontSize] = useState(36);
 
   // Game state
   const [phase, setPhase] = useState<'settings' | 'reading' | 'questions' | 'results'>('settings');
@@ -263,7 +270,8 @@ const RsvpExercise = () => {
             {currentChunkIndex < chunks.length ? (
               <span
                 key={currentChunkIndex}
-                className="font-reading text-3xl lg:text-4xl font-bold text-foreground animate-fade-in-up text-center leading-relaxed"
+                style={{ fontSize: `${fontSize}px` }}
+                className="font-reading font-bold text-foreground animate-fade-in-up text-center leading-relaxed"
               >
                 {chunks[currentChunkIndex]}
               </span>
@@ -355,6 +363,28 @@ const RsvpExercise = () => {
                   }`}
                 >
                   {t >= 1000 ? `${t / 1000}с` : `${t}мс`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Font size */}
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-3">
+              Розмір шрифта
+            </label>
+            <div className="flex gap-2">
+              {FONT_SIZE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setFontSize(opt.value)}
+                  className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
+                    fontSize === opt.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
+                  }`}
+                >
+                  {opt.label}
                 </button>
               ))}
             </div>

@@ -5,6 +5,12 @@ import { readingTexts, ReadingText } from '@/data/texts';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
 
+const FONT_SIZE_OPTIONS = [
+  { label: 'M', value: 18 },
+  { label: 'L', value: 22 },
+  { label: 'XL', value: 26 },
+];
+
 const SyntagmReadingExercise = () => {
   const navigate = useNavigate();
 
@@ -12,6 +18,7 @@ const SyntagmReadingExercise = () => {
   const [syntagmWidth, setSyntagmWidth] = useState(2);
   const [displayTime, setDisplayTime] = useState(500);
   const [selectedText, setSelectedText] = useState<ReadingText | null>(null);
+  const [fontSize, setFontSize] = useState(22);
 
   // Game state
   const [phase, setPhase] = useState<'settings' | 'reading' | 'questions' | 'results'>('settings');
@@ -267,7 +274,7 @@ const SyntagmReadingExercise = () => {
 
         {/* Full text with highlighted syntagm */}
         <div className="glass-card p-6 lg:p-8 mb-6">
-          <p className="font-reading text-lg lg:text-xl leading-[2.2] text-left">
+          <p className="font-reading leading-[2.2] text-left" style={{ fontSize: `${fontSize}px` }}>
             {words.map((word, index) => {
               const isHighlighted = currentChunk && index >= currentChunk.start && index < currentChunk.end;
               const isRead = currentChunk && index < currentChunk.start;
@@ -372,6 +379,28 @@ const SyntagmReadingExercise = () => {
                   }`}
                 >
                   {t >= 1000 ? `${t / 1000}с` : `${t}мс`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Font size */}
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-3">
+              Розмір шрифта
+            </label>
+            <div className="flex gap-2">
+              {FONT_SIZE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setFontSize(opt.value)}
+                  className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
+                    fontSize === opt.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
+                  }`}
+                >
+                  {opt.label}
                 </button>
               ))}
             </div>
