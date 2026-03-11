@@ -1,13 +1,13 @@
-import { ReadingText } from '@/data/texts';
+import { type TextDto } from '@/lib/api';
 import { BookOpen, Zap } from 'lucide-react';
 
 interface TextSelectorProps {
-  texts: ReadingText[];
-  onSelect: (text: ReadingText) => void;
+  texts: TextDto[];
+  onSelect: (text: TextDto) => void;
 }
 
 export const TextSelector = ({ texts, onSelect }: TextSelectorProps) => {
-  const getDifficultyColor = (difficulty: ReadingText['difficulty']) => {
+  const getDifficultyColor = (difficulty: TextDto['difficulty']) => {
     switch (difficulty) {
       case 'easy':
         return 'text-success bg-success/10';
@@ -18,7 +18,7 @@ export const TextSelector = ({ texts, onSelect }: TextSelectorProps) => {
     }
   };
 
-  const getDifficultyLabel = (difficulty: ReadingText['difficulty']) => {
+  const getDifficultyLabel = (difficulty: TextDto['difficulty']) => {
     switch (difficulty) {
       case 'easy':
         return 'Легко';

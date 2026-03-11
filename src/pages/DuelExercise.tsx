@@ -1,18 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { readingTexts, ReadingText } from '@/data/texts';
+import { textsApi, type TextDto } from '@/lib/api';
 import { TextSelector } from '@/components/TextSelector';
 import { GameScreen } from '@/components/GameScreen';
 import { ArrowLeft, Users } from 'lucide-react';
 
 const DuelExercise = () => {
   const navigate = useNavigate();
+  const [texts, setTexts] = useState<TextDto[]>([]);
+  const [textsLoading, setTextsLoading] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
-  const [selectedText, setSelectedText] = useState<ReadingText | null>(null);
+  const [selectedText, setSelectedText] = useState<TextDto | null>(null);
   const [player1Name, setPlayer1Name] = useState('Гравець 1');
   const [player2Name, setPlayer2Name] = useState('Гравець 2');
 
-  const handleStartGame = (text: ReadingText) => {
+  useEffect(() => {
+    textsApi.getAll()
+      .then(setTexts)
+      .catch(console.error)
+      .finally(() => setTextsLoading(false));
+  }, []);
+
+  const handleStartGame = (text: TextDto) => {
     setSelectedText(text);
     setGameStarted(true);
   };
@@ -74,7 +83,11 @@ const DuelExercise = () => {
         </div>
 
         <div className="glass-card p-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          <TextSelector texts={readingTexts} onSelect={handleStartGame} />
+          {textsLoading ? (
+            <p className="text-sm text-muted-foreground">Завантаження текстів...</p>
+          ) : (
+            <TextSelector texts={texts} onSelect={handleStartGame} />
+          )}
         </div>
       </div>
     </div>

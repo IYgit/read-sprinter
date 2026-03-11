@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { ArrowLeft, Play, Settings, Trophy, RotateCcw, Eye } from 'lucide-react';
+import { ArrowLeft, Play, Trophy, RotateCcw, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { readingTexts, ReadingText } from '@/data/texts';
+import { textsApi, type TextDto } from '@/lib/api';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
 
@@ -14,17 +14,28 @@ const FONT_SIZE_OPTIONS = [
 const RsvpExercise = () => {
   const navigate = useNavigate();
 
+  // Texts from API
+  const [texts, setTexts] = useState<TextDto[]>([]);
+  const [textsLoading, setTextsLoading] = useState(true);
+
+  useEffect(() => {
+    textsApi.getAll()
+      .then(setTexts)
+      .catch(console.error)
+      .finally(() => setTextsLoading(false));
+  }, []);
+
   // Settings
   const [syntagmWidth, setSyntagmWidth] = useState(1);
   const [displayTime, setDisplayTime] = useState(300);
-  const [selectedText, setSelectedText] = useState<ReadingText | null>(null);
+  const [selectedText, setSelectedText] = useState<TextDto | null>(null);
   const [fontSize, setFontSize] = useState(36);
 
   // Game state
   const [phase, setPhase] = useState<'settings' | 'reading' | 'questions' | 'results'>('settings');
   const [currentChunkIndex, setCurrentChunkIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [answers, setAnswers] = useState<Record<number, number>>({});
   const [showCorrect, setShowCorrect] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -74,7 +85,7 @@ const RsvpExercise = () => {
     };
   }, [isPlaying, phase, displayTime, chunks.length]);
 
-  const startGame = (text: ReadingText) => {
+  const startGame = (text: TextDto) => {
     setSelectedText(text);
     setCurrentChunkIndex(0);
     setAnswers({});
@@ -83,7 +94,7 @@ const RsvpExercise = () => {
     setIsPlaying(false);
   };
 
-  const handleAnswer = (questionId: string, optionIndex: number) => {
+  const handleAnswer = (questionId: number, optionIndex: number) => {
     if (showCorrect) return;
     setAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
   };
@@ -396,7 +407,9 @@ const RsvpExercise = () => {
               Оберіть текст
             </label>
             <div className="space-y-3">
-              {readingTexts.map((text) => (
+              {textsLoading ? (
+                <p className="text-sm text-muted-foreground">Завантаження текстів...</p>
+              ) : texts.map((text) => (
                 <button
                   key={text.id}
                   onClick={() => startGame(text)}

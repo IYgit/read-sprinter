@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ReadingText } from '@/data/texts';
+import { type TextDto } from '@/lib/api';
 import { SpeedControl } from './SpeedControl';
 import { ReadingText as ReadingTextComponent } from './ReadingText';
 import { ProgressBar } from './ProgressBar';
@@ -22,7 +22,7 @@ interface PlayerState {
 }
 
 interface GameScreenProps {
-  text: ReadingText;
+  text: TextDto;
   player1Name: string;
   player2Name: string;
   onBack: () => void;
@@ -86,7 +86,6 @@ export const GameScreen = ({
   const {
     currentWordIndex,
     progress,
-    isFinished: readingFinished,
     readingTime,
     reset: resetReading,
   } = useSpeedReading({

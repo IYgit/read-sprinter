@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Question } from '@/data/texts';
+import { useState } from 'react';
+import { type QuestionDto } from '@/lib/api';
 import { Check, X } from 'lucide-react';
 
 interface QuestionCardProps {
-  question: Question;
+  question: QuestionDto;
   questionNumber: number;
   totalQuestions: number;
   onAnswer: (isCorrect: boolean, timeSpent: number) => void;
