@@ -1,4 +1,5 @@
-import { getExerciseResults } from '@/lib/exerciseStats';
+import { useState, useEffect } from 'react';
+import { getExerciseResults, type ExerciseResult } from '@/lib/exerciseStats';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 interface ExerciseStatsChartProps {
@@ -7,7 +8,23 @@ interface ExerciseStatsChartProps {
 }
 
 const ExerciseStatsChart = ({ exerciseId, title }: ExerciseStatsChartProps) => {
-  const results = getExerciseResults(exerciseId);
+  const [results, setResults] = useState<ExerciseResult[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getExerciseResults(exerciseId)
+      .then(setResults)
+      .finally(() => setLoading(false));
+  }, [exerciseId]);
+
+  if (loading) {
+    return (
+      <div className="glass-card p-6 mt-6">
+        <h3 className="font-semibold mb-2 text-sm text-muted-foreground uppercase tracking-wider">{title}</h3>
+        <p className="text-sm text-muted-foreground">Завантаження статистики...</p>
+      </div>
+    );
+  }
 
   if (results.length < 2) {
     return (

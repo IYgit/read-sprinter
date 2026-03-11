@@ -14,13 +14,12 @@ import SyntagmReadingExercise from "./components/exercises/SyntagmReadingExercis
 import SchulteTableExercise from "./components/exercises/SchulteTableExercise";
 import LetterSearchExercise from "./components/exercises/LetterSearchExercise";
 import AuthPage from "./pages/AuthPage";
-import { getCurrentUser } from "./lib/auth";
+import { isAuthenticated } from "./lib/auth";
 
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const user = getCurrentUser();
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!isAuthenticated()) return <Navigate to="/auth" replace />;
   return <>{children}</>;
 };
 

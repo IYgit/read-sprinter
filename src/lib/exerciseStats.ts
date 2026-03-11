@@ -1,28 +1,42 @@
-import { getCurrentUser } from './auth';
+import { resultsApi, type ResultDto, type SaveResultRequest } from './api';
 
-const MAX_RESULTS = 20;
+export type { ResultDto };
 
+/** Backward-compatible shape used by ExerciseStatsChart */
 export interface ExerciseResult {
   score: number;
   date: string;
 }
 
-function getStorageKey(exerciseId: string): string {
-  const user = getCurrentUser();
-  return `exercise_stats_${user}_${exerciseId}`;
-}
+// ─── Save ─────────────────────────────────────────────────────────────────────
 
-export function saveExerciseResult(exerciseId: string, score: number): void {
-  const key = getStorageKey(exerciseId);
-  const existing: ExerciseResult[] = JSON.parse(localStorage.getItem(key) || '[]');
-  existing.push({ score, date: new Date().toISOString() });
-  if (existing.length > MAX_RESULTS) {
-    existing.splice(0, existing.length - MAX_RESULTS);
+export async function saveExerciseResult(
+  exerciseType: string,
+  score: number,
+  extra?: Omit<SaveResultRequest, 'exerciseType' | 'score'>,
+): Promise<void> {
+  try {
+    await resultsApi.save({ exerciseType, score, ...extra });
+  } catch (err) {
+    console.error('Failed to save exercise result:', err);
   }
-  localStorage.setItem(key, JSON.stringify(existing));
 }
 
-export function getExerciseResults(exerciseId: string): ExerciseResult[] {
-  const key = getStorageKey(exerciseId);
-  return JSON.parse(localStorage.getItem(key) || '[]');
+// ─── Load ─────────────────────────────────────────────────────────────────────
+
+export async function getExerciseResults(exerciseType: string): Promise<ExerciseResult[]> {
+  try {
+    const results = await resultsApi.getMyResultsByType(exerciseType);
+    return results.map(r => ({
+      score: r.score ?? 0,
+      date: r.completedAt,
+    }));
+  } catch (err) {
+    console.error('Failed to load exercise results:', err);
+    return [];
+  }
+}
+
+export async function getMySummary() {
+  return resultsApi.getMySummary();
 }

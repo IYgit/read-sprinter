@@ -10,13 +10,13 @@ const AuthPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     const result = isRegister
-      ? register(login, password)
-      : loginUser(login, password);
+      ? await register(login, password)
+      : await loginUser(login, password);
 
     if (result.success) {
       navigate('/');
