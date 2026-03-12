@@ -1,49 +1,11 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { textsApi, type TextDto } from '@/lib/api';
-import { TextSelector } from '@/components/TextSelector';
-import { GameScreen } from '@/components/GameScreen';
-import { ArrowLeft, Users } from 'lucide-react';
+import { ArrowLeft, Users, Wrench } from 'lucide-react';
 
 const DuelExercise = () => {
   const navigate = useNavigate();
-  const [texts, setTexts] = useState<TextDto[]>([]);
-  const [textsLoading, setTextsLoading] = useState(true);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [selectedText, setSelectedText] = useState<TextDto | null>(null);
-  const [player1Name, setPlayer1Name] = useState('Гравець 1');
-  const [player2Name, setPlayer2Name] = useState('Гравець 2');
-
-  useEffect(() => {
-    textsApi.getAll()
-      .then(setTexts)
-      .catch(console.error)
-      .finally(() => setTextsLoading(false));
-  }, []);
-
-  const handleStartGame = (text: TextDto) => {
-    setSelectedText(text);
-    setGameStarted(true);
-  };
-
-  const handleBack = () => {
-    setGameStarted(false);
-    setSelectedText(null);
-  };
-
-  if (gameStarted && selectedText) {
-    return (
-      <GameScreen
-        text={selectedText}
-        player1Name={player1Name}
-        player2Name={player2Name}
-        onBack={handleBack}
-      />
-    );
-  }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 lg:p-6">
+    <div className="max-w-2xl mx-auto p-4 lg:p-6">
       <button
         onClick={() => navigate('/')}
         className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
@@ -52,43 +14,19 @@ const DuelExercise = () => {
         До вибору вправ
       </button>
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        <div className="glass-card p-6 animate-fade-in-up">
-          <h3 className="text-lg font-semibold flex items-center gap-2 mb-6">
-            <Users size={20} className="text-primary" />
-            Імена гравців
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-muted-foreground mb-2">Гравець 1</label>
-              <input
-                type="text"
-                value={player1Name}
-                onChange={(e) => setPlayer1Name(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                placeholder="Введіть ім'я"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-muted-foreground mb-2">Гравець 2</label>
-              <input
-                type="text"
-                value={player2Name}
-                onChange={(e) => setPlayer2Name(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                placeholder="Введіть ім'я"
-              />
-            </div>
-          </div>
+      <div className="glass-card p-12 text-center animate-fade-in-up">
+        <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+          <Users size={40} className="text-primary" />
         </div>
-
-        <div className="glass-card p-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          {textsLoading ? (
-            <p className="text-sm text-muted-foreground">Завантаження текстів...</p>
-          ) : (
-            <TextSelector texts={texts} onSelect={handleStartGame} />
-          )}
+        <h2 className="text-2xl font-bold mb-3">Швидкочитання Дуель</h2>
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <Wrench size={16} className="text-accent" />
+          <span className="text-accent font-medium text-sm">В розробці</span>
         </div>
+        <p className="text-muted-foreground max-w-sm mx-auto">
+          Режим дуелі між двома гравцями в реальному часі незабаром буде доступний.
+          Змагайтесь із другом дистанційно!
+        </p>
       </div>
     </div>
   );
