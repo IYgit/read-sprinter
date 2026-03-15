@@ -188,3 +188,24 @@ export const resultsApi = {
   getMySummary: () => apiFetch<SummaryDto[]>('/api/results/me/summary'),
 };
 
+// ─── Duel / Matchmaking ──────────────────────────────────────────────────────
+
+export interface JoinQueueRequest {
+  exerciseType: string;
+  gridSize: number;
+  fontSize: number;
+}
+
+export interface JoinQueueResponse {
+  status: 'matched' | 'waiting';
+  sessionId?: number;
+}
+
+export const duelApi = {
+  joinQueue: (req: JoinQueueRequest) =>
+    apiFetch<JoinQueueResponse>('/api/duels/queue', { method: 'POST', body: JSON.stringify(req) }),
+
+  leaveQueue: () =>
+    apiFetch<void>('/api/duels/queue', { method: 'DELETE' }),
+};
+
