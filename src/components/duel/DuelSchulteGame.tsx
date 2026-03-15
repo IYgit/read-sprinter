@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useRef } from 'react';
+﻿﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { LogOut, Zap, WifiOff, UserX } from 'lucide-react';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 
@@ -95,7 +95,9 @@ const DuelSchulteGame = ({
         const errorPenalty = errors * 50;
         const score = Math.max(0, 1000 - timePenalty - errorPenalty);
 
-        onProgress(newProgress, errors);
+        // onProgress is intentionally NOT called here — onFinish already carries progress.
+        // Sending both would cause OPPONENT_PROGRESS to arrive after OPPONENT_FINISHED
+        // on the opponent's side, and could cause a race condition on the backend.
         onFinish(finalMs, errors, score, newProgress);
 
         if (!hasSaved.current) {
@@ -119,7 +121,9 @@ const DuelSchulteGame = ({
   }, [finished, clickedCells, nextNumber, totalCells, errors, onProgress, onFinish]);
 
   const opponentPct = totalCells > 0 ? (opponentProgress / totalCells) * 100 : 0;
-  const myPct = totalCells > 0 ? ((nextNumber - 1) / totalCells) * 100 : 0;
+  const myPct = finished
+    ? 100
+    : totalCells > 0 ? ((nextNumber - 1) / totalCells) * 100 : 0;
 
   const opponentStatusText = opponentFinished
     ? `✅ Фінішував! ${opponentDurationMs != null ? formatTime(opponentDurationMs) : ''}`.trim()
@@ -193,7 +197,7 @@ const DuelSchulteGame = ({
       <div className="glass-card p-4 mb-4">
         <div className="flex items-center justify-between mb-2 text-sm">
           <span className="text-muted-foreground">Мій прогрес</span>
-          <span className="text-muted-foreground">{nextNumber - 1}/{totalCells}</span>
+          <span className="text-muted-foreground">{finished ? totalCells : nextNumber - 1}/{totalCells}</span>
         </div>
         <div className="h-2 bg-secondary rounded-full overflow-hidden">
           <div
