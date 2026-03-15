@@ -94,17 +94,26 @@ export function useDuelWebSocket({
       reconnectDelay: 0, // no auto-reconnect for matchmaking
 
       onConnect: () => {
-        // 1. Subscribe to personal queue FIRST
+        // 1. Subscribe to personal queue FIRST.
+        //    This channel receives:
+        //      - MATCH_FOUND  (from matchmaking)
+        //      - OPPONENT_PROGRESS, OPPONENT_FINISHED, OPPONENT_LEFT,
+        //        OPPONENT_DISCONNECTED (personal events — sent only to the recipient)
         client.subscribe('/user/queue/duel', (msg: IMessage) => {
-          const data = JSON.parse(msg.body) as MatchFoundEvent;
+          const data = JSON.parse(msg.body) as MatchFoundEvent | DuelEvent;
+
           if (data.type === 'MATCH_FOUND') {
+            const matchData = data as MatchFoundEvent;
             // Subscribe to session topic IMMEDIATELY before notifying React,
             // to avoid missing COUNTDOWN that arrives right after MATCH_FOUND.
             if (sessionIdRef.current == null) {
-              sessionIdRef.current = data.sessionId;
-              subscribeToSession(client, data.sessionId);
+              sessionIdRef.current = matchData.sessionId;
+              subscribeToSession(client, matchData.sessionId);
             }
-            onMatchFound?.(data);
+            onMatchFound?.(matchData);
+          } else {
+            // All other personal messages are duel events for onDuelEvent handler
+            onDuelEvent?.(data as DuelEvent);
           }
         });
 
