@@ -27,10 +27,9 @@ export async function saveExerciseResult(
 export async function getExerciseResults(exerciseType: string): Promise<ExerciseResult[]> {
   try {
     const results = await resultsApi.getMyResultsByType(exerciseType);
-    return results.map(r => ({
-      score: r.score ?? 0,
-      date: r.completedAt,
-    }));
+    return results
+      .map(r => ({ score: r.score ?? 0, date: r.completedAt }))
+      .reverse(); // API returns DESC (newest first) — reverse for chronological chart order
   } catch (err) {
     console.error('Failed to load exercise results:', err);
     return [];
