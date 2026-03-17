@@ -32,10 +32,16 @@ export interface MatchFoundEvent {
   sessionId: number;
   opponentName: string;
   exerciseType: string;
+  // Schulte Table
   gridSize: number;
   fontSize: number;
+  // Shared
   numbers: number[];
   totalCells: number;
+  // Numbers exercise
+  digitCount?: number;
+  displayTime?: number;
+  totalRounds?: number;
 }
 
 export interface ParticipantResult {

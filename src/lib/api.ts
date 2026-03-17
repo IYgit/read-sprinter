@@ -192,8 +192,12 @@ export const resultsApi = {
 
 export interface JoinQueueRequest {
   exerciseType: string;
+  // Schulte Table
   gridSize: number;
   fontSize: number;
+  // Numbers exercise
+  digitCount: number;
+  displayTime: number;
 }
 
 export interface JoinQueueResponse {

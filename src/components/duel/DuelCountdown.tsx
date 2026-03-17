@@ -1,12 +1,12 @@
-﻿import { Swords } from 'lucide-react';
+import { Swords } from 'lucide-react';
 
 interface DuelCountdownProps {
   countdown: number;
   opponentName: string;
-  gridSize: number;
+  exerciseLabel: string;
 }
 
-const DuelCountdown = ({ countdown, opponentName, gridSize }: DuelCountdownProps) => {
+const DuelCountdown = ({ countdown, opponentName, exerciseLabel }: DuelCountdownProps) => {
   return (
     <div className="glass-card p-12 text-center animate-fade-in-up">
       <div className="flex items-center justify-center gap-3 mb-6 text-muted-foreground">
@@ -14,7 +14,7 @@ const DuelCountdown = ({ countdown, opponentName, gridSize }: DuelCountdownProps
         <span>vs <span className="text-foreground font-semibold">{opponentName}</span></span>
       </div>
       <p className="text-sm text-muted-foreground mb-2">
-        Таблиця Шульте {gridSize}×{gridSize}
+        {exerciseLabel}
       </p>
       <p className="text-sm text-muted-foreground mb-8">Готуйтесь!</p>
       <div key={countdown} className="text-8xl font-bold text-primary animate-fade-in-up mb-4">

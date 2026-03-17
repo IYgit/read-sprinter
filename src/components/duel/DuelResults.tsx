@@ -6,6 +6,7 @@ interface DuelResultsProps {
   myResult: ParticipantResult | null;
   opponentResult: ParticipantResult | null;
   totalCells: number;
+  exerciseType: string;
   onPlayAgain: () => void;
   onBack: () => void;
 }
@@ -25,6 +26,7 @@ const DuelResults = ({
   myResult,
   opponentResult,
   totalCells,
+  exerciseType,
   onPlayAgain,
   onBack,
 }: DuelResultsProps) => {
@@ -134,7 +136,10 @@ const DuelResults = ({
         </div>
       </div>
 
-      <ExerciseStatsChart exerciseId="schulte-table" title="Ваша статистика — Таблиця Шульте" />
+      <ExerciseStatsChart
+        exerciseId={exerciseType}
+        title={`Ваша статистика — ${exerciseType === 'numbers' ? 'Числа' : 'Таблиця Шульте'}`}
+      />
 
       <div className="flex gap-3">
         <button

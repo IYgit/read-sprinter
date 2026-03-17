@@ -1,72 +1,77 @@
-﻿import { useState } from 'react';
-import { Swords, Grid3X3 } from 'lucide-react';
+import { useState } from 'react';
+import { Hash } from 'lucide-react';
 import { type JoinQueueRequest } from '@/lib/api';
 
-interface DuelLobbyProps {
+interface DuelNumbersLobbyProps {
   onStartSearch: (req: JoinQueueRequest) => void;
   onBack: () => void;
 }
 
-const FONT_SIZE_OPTIONS = [
-  { label: 'S', value: 16 },
-  { label: 'M', value: 20 },
-  { label: 'L', value: 26 },
-  { label: 'XL', value: 32 },
+const DISPLAY_TIME_OPTIONS = [
+  { label: '300мс', value: 300 },
+  { label: '500мс', value: 500 },
+  { label: '700мс', value: 700 },
+  { label: '1с', value: 1000 },
+  { label: '1.5с', value: 1500 },
+  { label: '2с', value: 2000 },
 ];
 
-const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
-  const [gridSize, setGridSize] = useState(5);
-  const [fontSize, setFontSize] = useState(20);
+const DuelNumbersLobby = ({ onStartSearch, onBack }: DuelNumbersLobbyProps) => {
+  const [digitCount, setDigitCount] = useState(4);
+  const [displayTime, setDisplayTime] = useState(1000);
 
   const handleSearch = () => {
-    onStartSearch({ exerciseType: 'schulte-table', gridSize, fontSize, digitCount: 3, displayTime: 1000 });
+    onStartSearch({ exerciseType: 'numbers', digitCount, displayTime, gridSize: 5, fontSize: 20 });
   };
 
   return (
     <div className="glass-card p-8 animate-fade-in-up">
       <div className="text-center mb-8">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-          <Swords size={32} className="text-primary" />
+          <Hash size={32} className="text-primary" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">Таблиця Шульте — Дуель</h2>
+        <h2 className="text-2xl font-bold mb-2">Числа — Дуель</h2>
         <p className="text-sm text-muted-foreground">
-          Змагайтесь з іншим гравцем у Таблиці Шульте в реальному часі
+          Змагайтесь з суперником у запам'ятовуванні чисел
         </p>
       </div>
 
       <div className="space-y-6 mb-8">
+        {/* Digit count */}
         <div>
           <p className="text-sm font-medium text-muted-foreground mb-3">
-            Розмір таблиці: {gridSize}×{gridSize} ({gridSize * gridSize} чисел)
+            Кількість цифр:{' '}
+            <span className="text-primary font-bold text-lg">{digitCount}</span>
           </p>
           <div className="flex gap-2">
-            {[3, 4, 5, 6, 7].map(s => (
+            {[3, 4, 5, 6, 7, 8].map((n) => (
               <button
-                key={s}
-                onClick={() => setGridSize(s)}
+                key={n}
+                onClick={() => setDigitCount(n)}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  gridSize === s
+                  digitCount === n
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
               >
-                {s}×{s}
+                {n}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Display time */}
         <div>
           <p className="text-sm font-medium text-muted-foreground mb-3">
-            Розмір шрифта
+            Час показу числа
           </p>
-          <div className="flex gap-2">
-            {FONT_SIZE_OPTIONS.map(opt => (
+          <div className="flex gap-2 flex-wrap">
+            {DISPLAY_TIME_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
-                onClick={() => setFontSize(opt.value)}
+                onClick={() => setDisplayTime(opt.value)}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  fontSize === opt.value
+                  displayTime === opt.value
                     ? 'bg-accent text-accent-foreground'
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
@@ -77,11 +82,11 @@ const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
           </div>
         </div>
 
-        <div className="glass-card p-4 text-sm text-muted-foreground">
-          <p className="flex items-center gap-2">
-            <Grid3X3 size={16} className="text-primary shrink-0" />
-            Параметри узгоджуються із суперником: розмір — менший із двох, шрифт — більший.
-          </p>
+        <div className="glass-card p-4 text-sm text-muted-foreground space-y-1">
+          <p>⚙️ Параметри узгоджуються із суперником:</p>
+          <p className="pl-4">• Кількість цифр — <span className="text-foreground">менша із двох</span></p>
+          <p className="pl-4">• Час показу — <span className="text-foreground">більший із двох</span></p>
+          <p className="pl-4">• Кількість раундів — <span className="text-foreground">10 (фіксовано)</span></p>
         </div>
       </div>
 
@@ -90,7 +95,7 @@ const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
           onClick={handleSearch}
           className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
         >
-          <Swords size={20} />
+          <Hash size={20} />
           Знайти суперника
         </button>
         <button
@@ -104,4 +109,5 @@ const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
   );
 };
 
-export default DuelLobby;
+export default DuelNumbersLobby;
+
