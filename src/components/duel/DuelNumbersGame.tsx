@@ -221,7 +221,7 @@ const DuelNumbersGame = ({
       <div className="h-1.5 bg-secondary rounded-full overflow-hidden mb-6">
         <div
           className="h-full bg-primary/50 transition-all duration-300 rounded-full"
-          style={{ width: `${(round / totalRounds) * 100}%` }}
+          style={{ width: `${(answeredRounds / totalRounds) * 100}%` }}
         />
       </div>
 
