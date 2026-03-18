@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ArrowLeft, Play, Settings, Trophy, RotateCcw, Timer } from 'lucide-react';
+import { ArrowLeft, Play, Settings, Trophy, RotateCcw, Timer, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
+import { wordPairsApi } from '@/lib/api';
 
 interface WordPair {
   word1: string;
@@ -16,58 +17,21 @@ interface CellState {
   revealed: boolean;
 }
 
-const WORD_PAIR_SETS: [string, string][] = [
-  ['десна', 'весна'], ['галант', 'талант'], ['арфа', 'фара'],
-  ['кішка', 'мішка'], ['лопата', 'робота'], ['марка', 'парка'],
-  ['палата', 'салата'], ['горіх', 'поріг'], ['калина', 'малина'],
-  ['ворон', 'ворог'], ['барон', 'вагон'], ['банка', 'ранка'],
-  ['сила', 'піла'], ['доля', 'воля'], ['нитка', 'вітка'],
-  ['крило', 'грило'], ['гроза', 'проза'], ['казка', 'маска'],
-  ['лимон', 'вагон'], ['місто', 'тісто'], ['кобра', 'добра'],
-  ['крига', 'книга'], ['човен', 'вогонь'], ['верба', 'герба'],
-  ['школа', 'скала'], ['рамка', 'лампа'], ['ніжка', 'мішка'],
-  ['кінець', 'вінець'], ['ложка', 'мошка'], ['бочка', 'кочка'],
-];
-
-const SAME_WORDS: string[] = [
-  'ілюзія', 'вигін', 'музика', 'плаття', 'дзеркало', 'зоряний',
-  'пілот', 'кулон', 'ескімо', 'перлина', 'лавина', 'фонтан',
-  'медаль', 'океан', 'парасон', 'вулкан', 'магніт', 'орбіта',
-];
-
 const FONT_SIZE_OPTIONS = [
   { label: 'S', value: 12 },
   { label: 'M', value: 14 },
   { label: 'L', value: 18 },
 ];
 
-function generateGrid(rows: number, cols: number, diffRatio: number): CellState[][] {
-  const totalCells = rows * cols;
-  const diffCount = Math.floor(totalCells * diffRatio);
-  const sameCount = totalCells - diffCount;
-
-  const pairs: WordPair[] = [];
-
-  const shuffledDiff = [...WORD_PAIR_SETS].sort(() => Math.random() - 0.5);
-  for (let i = 0; i < diffCount; i++) {
-    const [w1, w2] = shuffledDiff[i % shuffledDiff.length];
-    pairs.push({ word1: w1, word2: w2, isDifferent: true });
-  }
-
-  const shuffledSame = [...SAME_WORDS].sort(() => Math.random() - 0.5);
-  for (let i = 0; i < sameCount; i++) {
-    const w = shuffledSame[i % shuffledSame.length];
-    pairs.push({ word1: w, word2: w, isDifferent: false });
-  }
-
-  const shuffled = pairs.sort(() => Math.random() - 0.5);
-
+/** Convert flat API response into 2D grid of CellState */
+function buildGrid(rows: number, cols: number, items: { w1: string; w2: string; diff: boolean }[]): CellState[][] {
   const grid: CellState[][] = [];
   for (let r = 0; r < rows; r++) {
     const row: CellState[] = [];
     for (let c = 0; c < cols; c++) {
+      const item = items[r * cols + c];
       row.push({
-        pair: shuffled[r * cols + c],
+        pair: { word1: item.w1, word2: item.w2, isDifferent: item.diff },
         selected: false,
         revealed: false,
       });
@@ -84,7 +48,7 @@ const WordPairsExercise = () => {
   const [cols, setCols] = useState(4);
   const [timeLimit, setTimeLimit] = useState(60);
   const [fontSize, setFontSize] = useState(14);
-  const [phase, setPhase] = useState<'settings' | 'playing' | 'results'>('settings');
+  const [phase, setPhase] = useState<'settings' | 'loading' | 'playing' | 'results'>('settings');
   const [grid, setGrid] = useState<CellState[][]>([]);
   const [timeLeft, setTimeLeft] = useState(0);
   const [score, setScore] = useState(0);
@@ -94,16 +58,23 @@ const WordPairsExercise = () => {
   const [totalDifferent, setTotalDifferent] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const startGame = useCallback(() => {
-    const newGrid = generateGrid(rows, cols, 0.5);
-    setGrid(newGrid);
-    setTimeLeft(timeLimit);
-    setScore(0);
-    setCorrectSelections(0);
-    setWrongSelections(0);
-    setPhase('playing');
-    const diffCount = newGrid.flat().filter(c => c.pair.isDifferent).length;
-    setTotalDifferent(diffCount);
+  const startGame = useCallback(async () => {
+    setPhase('loading');
+    try {
+      const items = await wordPairsApi.getGrid(rows, cols);
+      const newGrid = buildGrid(rows, cols, items);
+      const diffCount = newGrid.flat().filter(c => c.pair.isDifferent).length;
+      setGrid(newGrid);
+      setTimeLeft(timeLimit);
+      setScore(0);
+      setCorrectSelections(0);
+      setWrongSelections(0);
+      setTotalDifferent(diffCount);
+      setPhase('playing');
+    } catch {
+      // fallback: return to settings on error
+      setPhase('settings');
+    }
   }, [rows, cols, timeLimit]);
 
   useEffect(() => {
@@ -302,6 +273,17 @@ const WordPairsExercise = () => {
               До вправ
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'loading') {
+    return (
+      <div className="max-w-2xl mx-auto p-4 lg:p-6 flex items-center justify-center min-h-[300px]">
+        <div className="flex flex-col items-center gap-3 text-muted-foreground">
+          <Loader2 size={36} className="animate-spin text-primary" />
+          <p>Завантаження слів...</p>
         </div>
       </div>
     );

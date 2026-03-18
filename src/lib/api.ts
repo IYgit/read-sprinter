@@ -218,3 +218,14 @@ export const duelApi = {
     apiFetch<void>('/api/duels/queue', { method: 'DELETE' }),
 };
 
+export interface WordPairItem {
+  w1: string;
+  w2: string;
+  diff: boolean;
+}
+
+export const wordPairsApi = {
+  getGrid: (rows: number, cols: number) =>
+    apiFetch<WordPairItem[]>(`/api/word-pairs?rows=${rows}&cols=${cols}`),
+};
+
