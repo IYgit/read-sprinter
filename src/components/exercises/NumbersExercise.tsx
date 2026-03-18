@@ -39,6 +39,8 @@ const NumbersExercise = () => {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0);
+  const [durationMs, setDurationMs] = useState(0);
 
   const generateNumber = useCallback((digits: number) => {
     const min = Math.pow(10, digits - 1);
@@ -65,6 +67,8 @@ const NumbersExercise = () => {
     setRound(0);
     setResults([]);
     setFeedback(null);
+    setDurationMs(0);
+    startTimeRef.current = Date.now();
     setTimeout(showNextNumber, 500);
   };
 
@@ -88,6 +92,7 @@ const NumbersExercise = () => {
     setRound(nextRound);
 
     if (nextRound >= totalRounds) {
+      setDurationMs(Date.now() - startTimeRef.current);
       setTimeout(() => setPhase('results'), 1200);
     } else {
       setTimeout(() => {
@@ -108,9 +113,12 @@ const NumbersExercise = () => {
     };
   }, []);
 
-  const score = results.filter((r) => r.correct).length * 100;
+  const correctCount = results.filter((r) => r.correct).length;
+  const timePenalty = Math.floor(durationMs / 1000) * 2;
+  const errorPenalty = (results.length - correctCount) * 20;
+  const score = Math.max(0, correctCount * 100 - timePenalty - errorPenalty);
   const accuracy = results.length > 0
-    ? Math.round((results.filter((r) => r.correct).length / results.length) * 100)
+    ? Math.round((correctCount / results.length) * 100)
     : 0;
 
   useEffect(() => {
@@ -247,7 +255,7 @@ const NumbersExercise = () => {
                 <span className="text-primary font-bold text-lg">{displayTime} мс</span>
               </label>
               <div className="flex gap-2 flex-wrap">
-                {[300, 500, 700, 1000, 1500, 2000].map((t) => (
+                {[50, 100, 200, 300, 500, 700, 1000, 1500, 2000].map((t) => (
                   <button
                     key={t}
                     onClick={() => setDisplayTime(t)}
