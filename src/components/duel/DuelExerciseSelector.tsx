@@ -1,6 +1,6 @@
-import { Grid3X3, Hash, Swords } from 'lucide-react';
+import { Grid3X3, Hash, Swords, BookOpen } from 'lucide-react';
 
-type ExerciseType = 'schulte-table' | 'numbers';
+type ExerciseType = 'schulte-table' | 'numbers' | 'word-pairs';
 
 interface DuelExerciseSelectorProps {
   onSelect: (exerciseType: ExerciseType) => void;
@@ -20,6 +20,13 @@ const exercises = [
     title: 'Числа',
     description: 'Запам\'ятайте число, що з\'являється на короткий час, і введіть його.',
     badge: 'Пам\'ять · Концентрація',
+  },
+  {
+    id: 'word-pairs' as ExerciseType,
+    icon: BookOpen,
+    title: 'Словопари',
+    description: 'Знайдіть клітинки, де слова відрізняються, якомога швидше.',
+    badge: 'Увага · Розрізнення',
   },
 ];
 

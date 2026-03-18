@@ -24,7 +24,17 @@ const DuelNumbersLobby = ({ onStartSearch, onBack }: DuelNumbersLobbyProps) => {
   const [displayTime, setDisplayTime] = useState(1000);
 
   const handleSearch = () => {
-    onStartSearch({ exerciseType: 'numbers', digitCount, displayTime, gridSize: 5, fontSize: 20 });
+    onStartSearch({
+      exerciseType: 'numbers',
+      digitCount,
+      displayTime,
+      gridSize: 5,
+      fontSize: 20,
+      wpRows: 4,
+      wpCols: 4,
+      wpTimeLimit: 60,
+      wpFontSize: 14,
+    });
   };
 
   return (

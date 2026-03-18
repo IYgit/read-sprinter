@@ -42,6 +42,12 @@ export interface MatchFoundEvent {
   digitCount?: number;
   displayTime?: number;
   totalRounds?: number;
+  // Word Pairs exercise
+  pairs?: { w1: string; w2: string; diff: boolean }[];
+  wpRows?: number;
+  wpCols?: number;
+  wpTimeLimit?: number;
+  wpFontSize?: number;
 }
 
 export interface ParticipantResult {

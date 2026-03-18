@@ -4,17 +4,19 @@ import { ArrowLeft } from 'lucide-react';
 import DuelExerciseSelector from '@/components/duel/DuelExerciseSelector';
 import DuelLobby from '@/components/duel/DuelLobby';
 import DuelNumbersLobby from '@/components/duel/DuelNumbersLobby';
+import DuelWordPairsLobby from '@/components/duel/DuelWordPairsLobby';
 import DuelWaiting from '@/components/duel/DuelWaiting';
 import DuelCountdown from '@/components/duel/DuelCountdown';
 import DuelSchulteGame from '@/components/duel/DuelSchulteGame';
 import DuelNumbersGame from '@/components/duel/DuelNumbersGame';
+import DuelWordPairsGame from '@/components/duel/DuelWordPairsGame';
 import DuelResults from '@/components/duel/DuelResults';
 import { useDuelWebSocket, type MatchFoundEvent, type DuelEvent, type ParticipantResult } from '@/hooks/useDuelWebSocket';
 import { type JoinQueueRequest } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
 
 type Phase = 'exercise-select' | 'lobby' | 'waiting' | 'countdown' | 'playing' | 'results';
-type ExerciseType = 'schulte-table' | 'numbers';
+type ExerciseType = 'schulte-table' | 'numbers' | 'word-pairs';
 
 interface MatchInfo {
   sessionId: number;
@@ -30,11 +32,20 @@ interface MatchInfo {
   digitCount: number;
   displayTime: number;
   totalRounds: number;
+  // Word Pairs exercise
+  pairs: { w1: string; w2: string; diff: boolean }[];
+  wpRows: number;
+  wpCols: number;
+  wpTimeLimit: number;
+  wpFontSize: number;
 }
 
 function buildExerciseLabel(info: MatchInfo): string {
   if (info.exerciseType === 'numbers') {
     return `Числа — ${info.digitCount} цифри, ${info.totalRounds} раундів`;
+  }
+  if (info.exerciseType === 'word-pairs') {
+    return `Словопари ${info.wpRows}×${info.wpCols}, ${info.wpTimeLimit}с`;
   }
   return `Таблиця Шульте ${info.gridSize}×${info.gridSize}`;
 }
@@ -62,11 +73,16 @@ const DuelExercise = () => {
       exerciseType: event.exerciseType as ExerciseType,
       gridSize: event.gridSize ?? 5,
       fontSize: event.fontSize ?? 20,
-      numbers: event.numbers,
+      numbers: event.numbers ?? [],
       totalCells: event.totalCells,
       digitCount: event.digitCount ?? 3,
       displayTime: event.displayTime ?? 1000,
       totalRounds: event.totalRounds ?? 10,
+      pairs: event.pairs ?? [],
+      wpRows: event.wpRows ?? 4,
+      wpCols: event.wpCols ?? 4,
+      wpTimeLimit: event.wpTimeLimit ?? 60,
+      wpFontSize: event.wpFontSize ?? 14,
     });
     setPhase('countdown');
   }, []);
@@ -123,8 +139,6 @@ const DuelExercise = () => {
     setPhase('lobby');
   }, []);
 
-  // Receives JoinQueueRequest from DuelLobby, passes it to connect()
-  // connect() will call POST /api/duels/queue ONLY after WebSocket is CONNECTED
   const handleStartSearch = useCallback((req: JoinQueueRequest) => {
     connect(req);
     setPhase('waiting');
@@ -193,6 +207,10 @@ const DuelExercise = () => {
         <DuelNumbersLobby onStartSearch={handleStartSearch} onBack={handleBackToSelect} />
       )}
 
+      {phase === 'lobby' && selectedExercise === 'word-pairs' && (
+        <DuelWordPairsLobby onStartSearch={handleStartSearch} onBack={handleBackToSelect} />
+      )}
+
       {phase === 'waiting' && (
         <DuelWaiting onCancel={handleCancelSearch} />
       )}
@@ -222,6 +240,29 @@ const DuelExercise = () => {
       {phase === 'playing' && matchInfo && matchInfo.exerciseType === 'numbers' && (
         <DuelNumbersGame
           matchInfo={matchInfo}
+          opponentProgress={opponentProgress}
+          opponentFinished={opponentFinished}
+          opponentDurationMs={opponentDurationMs}
+          opponentDisconnected={opponentDisconnected}
+          opponentLeft={opponentLeft}
+          onProgress={(progress, errors) => sendProgress(matchInfo.sessionId, progress, errors)}
+          onFinish={handleMyFinish}
+          onLeave={handleLeave}
+        />
+      )}
+
+      {phase === 'playing' && matchInfo && matchInfo.exerciseType === 'word-pairs' && (
+        <DuelWordPairsGame
+          matchInfo={{
+            sessionId: matchInfo.sessionId,
+            opponentName: matchInfo.opponentName,
+            pairs: matchInfo.pairs,
+            wpRows: matchInfo.wpRows,
+            wpCols: matchInfo.wpCols,
+            wpTimeLimit: matchInfo.wpTimeLimit,
+            wpFontSize: matchInfo.wpFontSize,
+            totalCells: matchInfo.totalCells,
+          }}
           opponentProgress={opponentProgress}
           opponentFinished={opponentFinished}
           opponentDurationMs={opponentDurationMs}

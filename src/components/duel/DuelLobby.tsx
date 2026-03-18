@@ -19,7 +19,17 @@ const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
   const [fontSize, setFontSize] = useState(20);
 
   const handleSearch = () => {
-    onStartSearch({ exerciseType: 'schulte-table', gridSize, fontSize, digitCount: 3, displayTime: 1000 });
+    onStartSearch({
+      exerciseType: 'schulte-table',
+      gridSize,
+      fontSize,
+      digitCount: 3,
+      displayTime: 1000,
+      wpRows: 4,
+      wpCols: 4,
+      wpTimeLimit: 60,
+      wpFontSize: 14,
+    });
   };
 
   return (

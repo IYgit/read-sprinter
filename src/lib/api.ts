@@ -198,6 +198,11 @@ export interface JoinQueueRequest {
   // Numbers exercise
   digitCount: number;
   displayTime: number;
+  // Word Pairs exercise
+  wpRows: number;
+  wpCols: number;
+  wpTimeLimit: number;
+  wpFontSize: number;
 }
 
 export interface JoinQueueResponse {
