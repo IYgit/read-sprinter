@@ -103,7 +103,11 @@ const DuelNumbersGame = ({
       setElapsed(finalMs);
       setFinished(true);
 
-      const score = newCorrect * 100;
+      // Score considers both accuracy and speed.
+      // +100 per correct answer, -20 per error, -2 per second spent.
+      const timePenaltyPts = Math.floor(finalMs / 1000) * 2;
+      const errorPenaltyPts = newErrors * 20;
+      const score = Math.max(0, newCorrect * 100 - timePenaltyPts - errorPenaltyPts);
       onFinish(finalMs, newErrors, score, completedRounds);
 
       if (!hasSaved.current) {

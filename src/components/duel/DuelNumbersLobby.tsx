@@ -8,6 +8,9 @@ interface DuelNumbersLobbyProps {
 }
 
 const DISPLAY_TIME_OPTIONS = [
+  { label: '50мс', value: 50 },
+  { label: '100мс', value: 100 },
+  { label: '200мс', value: 200 },
   { label: '300мс', value: 300 },
   { label: '500мс', value: 500 },
   { label: '700мс', value: 700 },
