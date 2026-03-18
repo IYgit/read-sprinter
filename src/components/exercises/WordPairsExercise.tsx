@@ -131,8 +131,10 @@ const WordPairsExercise = () => {
     const missed = grid.flat().filter(c => c.pair.isDifferent && !c.selected).length;
     setMissedPairs(missed);
     setGrid(prev => prev.map(row => row.map(cell => ({ ...cell, revealed: true }))));
+    // Add time bonus: +2 pts per second remaining
+    setScore(prev => prev + timeLeft * 2);
     setPhase('results');
-  }, [grid]);
+  }, [grid, timeLeft]);
 
   const handleCellClick = (r: number, c: number) => {
     if (phase !== 'playing' || grid[r][c].selected) return;

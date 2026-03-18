@@ -112,7 +112,7 @@ const DuelWordPairsGame = ({
     // Reveal all unselected cells
     setGrid((prev) => prev.map((c) => ({ ...c, revealed: true })));
 
-    const score = Math.max(0, currentCorrect * 100 - currentWrong * 50);
+    const score = Math.max(0, currentCorrect * 100 - currentWrong * 50 - Math.floor(finalMs / 1000) * 2);
     onFinish(finalMs, currentWrong, score, currentCorrect);
 
     if (!hasSaved.current) {
