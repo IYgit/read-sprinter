@@ -194,7 +194,8 @@ export type JoinQueueRequest =
   | { exerciseType: 'schulte-table'; gridSize: number; fontSize: number }
   | { exerciseType: 'numbers';       digitCount: number; displayTime: number }
   | { exerciseType: 'word-pairs';    wpRows: number; wpCols: number; wpTimeLimit: number; wpFontSize: number }
-  | { exerciseType: 'rsvp';          rsvpSyntagmWidth: number; rsvpDisplayTime: number };
+  | { exerciseType: 'rsvp';          rsvpSyntagmWidth: number; rsvpDisplayTime: number }
+  | { exerciseType: 'word-search';   wsRows: number; wsCols: number; wsWordCount: number; wsFontSize: number };
 
 export interface JoinQueueResponse {
   status: 'matched' | 'waiting';

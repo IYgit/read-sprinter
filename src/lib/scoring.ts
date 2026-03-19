@@ -55,3 +55,12 @@ export function calcRsvpScore(
   return Math.round(correctRatio * 100 * (1 + difficultyFactor));
 }
 
+/**
+ * Пошук слів:
+ * 100 балів за знайдене слово + бонус швидкості (до 180 сек)
+ */
+export function calcWordSearchScore(foundCount: number, timeElapsedSec: number): number {
+  const speedBonus = Math.max(0, 180 - timeElapsedSec);
+  return foundCount * 100 + speedBonus * foundCount;
+}
+

@@ -6,19 +6,21 @@ import DuelLobby from '@/components/duel/DuelLobby';
 import DuelNumbersLobby from '@/components/duel/DuelNumbersLobby';
 import DuelWordPairsLobby from '@/components/duel/DuelWordPairsLobby';
 import DuelRsvpLobby from '@/components/duel/DuelRsvpLobby';
+import DuelWordSearchLobby from '@/components/duel/DuelWordSearchLobby';
 import DuelWaiting from '@/components/duel/DuelWaiting';
 import DuelCountdown from '@/components/duel/DuelCountdown';
 import DuelSchulteGame from '@/components/duel/DuelSchulteGame';
 import DuelNumbersGame from '@/components/duel/DuelNumbersGame';
 import DuelWordPairsGame from '@/components/duel/DuelWordPairsGame';
 import DuelRsvpGame from '@/components/duel/DuelRsvpGame';
+import DuelWordSearchGame from '@/components/duel/DuelWordSearchGame';
 import DuelResults from '@/components/duel/DuelResults';
 import { useDuelWebSocket, type MatchFoundEvent, type DuelEvent, type ParticipantResult } from '@/hooks/useDuelWebSocket';
 import { type JoinQueueRequest } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
 
 type Phase = 'exercise-select' | 'lobby' | 'waiting' | 'countdown' | 'playing' | 'results';
-type ExerciseType = 'schulte-table' | 'numbers' | 'word-pairs' | 'rsvp';
+type ExerciseType = 'schulte-table' | 'numbers' | 'word-pairs' | 'rsvp' | 'word-search';
 
 interface MatchInfo {
   sessionId: number;
@@ -46,6 +48,14 @@ interface MatchInfo {
   rsvpTextTitle: string;
   rsvpTextContent: string;
   rsvpQuestions: { id: number; text: string; options: string[]; correctIndex: number }[];
+  // Word Search exercise
+  wsGrid: string[][];
+  wsWords: string[];
+  wsWordPositions: { word: string; row: number; startCol: number }[];
+  wsRows: number;
+  wsCols: number;
+  wsWordCount: number;
+  wsFontSize: number;
 }
 
 function buildExerciseLabel(info: MatchInfo): string {
@@ -57,6 +67,9 @@ function buildExerciseLabel(info: MatchInfo): string {
   }
   if (info.exerciseType === 'rsvp') {
     return `RSVP — ${info.rsvpSyntagmWidth} сл., ${info.rsvpDisplayTime} мс`;
+  }
+  if (info.exerciseType === 'word-search') {
+    return `Пошук слів ${info.wsRows}×${info.wsCols}, ${info.wsWordCount} слів`;
   }
   return `Таблиця Шульте ${info.gridSize}×${info.gridSize}`;
 }
@@ -99,6 +112,13 @@ const DuelExercise = () => {
       rsvpTextTitle: event.rsvpTextTitle ?? '',
       rsvpTextContent: event.rsvpTextContent ?? '',
       rsvpQuestions: event.rsvpQuestions ?? [],
+      wsGrid: event.wsGrid ?? [],
+      wsWords: event.wsWords ?? [],
+      wsWordPositions: event.wsWordPositions ?? [],
+      wsRows: event.wsRows ?? 12,
+      wsCols: event.wsCols ?? 11,
+      wsWordCount: event.wsWordCount ?? 3,
+      wsFontSize: event.wsFontSize ?? 16,
     });
     setPhase('countdown');
   }, []);
@@ -238,6 +258,10 @@ const DuelExercise = () => {
         <DuelRsvpLobby onStartSearch={handleStartSearch} onBack={handleBackToSelect} />
       )}
 
+      {phase === 'lobby' && selectedExercise === 'word-search' && (
+        <DuelWordSearchLobby onStartSearch={handleStartSearch} onBack={handleBackToSelect} />
+      )}
+
       {phase === 'waiting' && (
         <DuelWaiting onCancel={handleCancelSearch} />
       )}
@@ -312,6 +336,31 @@ const DuelExercise = () => {
             rsvpTextContent: matchInfo.rsvpTextContent,
             rsvpQuestions: matchInfo.rsvpQuestions,
             totalCells: matchInfo.totalCells,
+          }}
+          opponentProgress={opponentProgress}
+          opponentFinished={opponentFinished}
+          opponentDurationMs={opponentDurationMs}
+          opponentDisconnected={opponentDisconnected}
+          opponentLeft={opponentLeft}
+          onProgress={(progress, errors) => sendProgress(matchInfo.sessionId, progress, errors)}
+          onFinish={handleMyFinish}
+          onLeave={handleLeave}
+        />
+      )}
+
+      {phase === 'playing' && matchInfo && matchInfo.exerciseType === 'word-search' && (
+        <DuelWordSearchGame
+          matchInfo={{
+            sessionId:       matchInfo.sessionId,
+            opponentName:    matchInfo.opponentName,
+            wsGrid:          matchInfo.wsGrid,
+            wsWords:         matchInfo.wsWords,
+            wsWordPositions: matchInfo.wsWordPositions,
+            wsRows:          matchInfo.wsRows,
+            wsCols:          matchInfo.wsCols,
+            wsWordCount:     matchInfo.wsWordCount,
+            wsFontSize:      matchInfo.wsFontSize,
+            totalCells:      matchInfo.totalCells,
           }}
           opponentProgress={opponentProgress}
           opponentFinished={opponentFinished}

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
 import { Slider } from '@/components/ui/slider';
+import { calcWordSearchScore } from '@/lib/scoring';
 
 const UKRAINIAN_LETTERS = 'абвгґдеєжзиіїйклмнопрстуфхцчшщьюя';
 
@@ -138,7 +139,7 @@ const WordSearchExercise = () => {
     );
   };
 
-  const score = foundWords.size * 100 + Math.max(0, (180 - timeElapsed)) * foundWords.size;
+  const score = calcWordSearchScore(foundWords.size, timeElapsed);
 
   useEffect(() => {
     if (phase === 'results') {

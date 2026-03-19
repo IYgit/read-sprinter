@@ -55,6 +55,14 @@ export interface MatchFoundEvent {
   rsvpTextTitle?: string;
   rsvpTextContent?: string;
   rsvpQuestions?: { id: number; text: string; options: string[]; correctIndex: number }[];
+  // Word Search exercise
+  wsGrid?: string[][];
+  wsWords?: string[];
+  wsWordPositions?: { word: string; row: number; startCol: number }[];
+  wsRows?: number;
+  wsCols?: number;
+  wsWordCount?: number;
+  wsFontSize?: number;
 }
 
 export interface ParticipantResult {

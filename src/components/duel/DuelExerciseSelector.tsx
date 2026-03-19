@@ -1,6 +1,6 @@
-import { Grid3X3, Hash, Swords, BookOpen, Eye } from 'lucide-react';
+import { Grid3X3, Hash, Swords, BookOpen, Eye, Search } from 'lucide-react';
 
-type ExerciseType = 'schulte-table' | 'numbers' | 'word-pairs' | 'rsvp';
+type ExerciseType = 'schulte-table' | 'numbers' | 'word-pairs' | 'rsvp' | 'word-search';
 
 interface DuelExerciseSelectorProps {
   onSelect: (exerciseType: ExerciseType) => void;
@@ -34,6 +34,13 @@ const exercises = [
     title: 'RSVP',
     description: 'Читайте текст за синтагмами — хто краще зрозумів, той і переміг.',
     badge: 'Читання · Розуміння',
+  },
+  {
+    id: 'word-search' as ExerciseType,
+    icon: Search,
+    title: 'Пошук слів',
+    description: 'Знайдіть приховані слова у сітці з букв якомога швидше.',
+    badge: 'Увага · Пошук',
   },
 ];
 
