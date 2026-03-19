@@ -32,10 +32,6 @@ const DuelWordPairsLobby = ({ onStartSearch, onBack }: DuelWordPairsLobbyProps) 
     const { rows, cols } = GRID_OPTIONS[gridIdx];
     onStartSearch({
       exerciseType: 'word-pairs',
-      gridSize: 5,
-      fontSize: 20,
-      digitCount: 3,
-      displayTime: 1000,
       wpRows: rows,
       wpCols: cols,
       wpTimeLimit: timeLimit,

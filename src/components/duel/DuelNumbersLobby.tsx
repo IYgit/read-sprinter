@@ -28,12 +28,6 @@ const DuelNumbersLobby = ({ onStartSearch, onBack }: DuelNumbersLobbyProps) => {
       exerciseType: 'numbers',
       digitCount,
       displayTime,
-      gridSize: 5,
-      fontSize: 20,
-      wpRows: 4,
-      wpCols: 4,
-      wpTimeLimit: 60,
-      wpFontSize: 14,
     });
   };
 

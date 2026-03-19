@@ -190,23 +190,11 @@ export const resultsApi = {
 
 // ─── Duel / Matchmaking ──────────────────────────────────────────────────────
 
-export interface JoinQueueRequest {
-  exerciseType: string;
-  // Schulte Table
-  gridSize: number;
-  fontSize: number;
-  // Numbers exercise
-  digitCount: number;
-  displayTime: number;
-  // Word Pairs exercise
-  wpRows: number;
-  wpCols: number;
-  wpTimeLimit: number;
-  wpFontSize: number;
-  // RSVP exercise (optional — only provided by DuelRsvpLobby)
-  rsvpSyntagmWidth?: number;
-  rsvpDisplayTime?: number;
-}
+export type JoinQueueRequest =
+  | { exerciseType: 'schulte-table'; gridSize: number; fontSize: number }
+  | { exerciseType: 'numbers';       digitCount: number; displayTime: number }
+  | { exerciseType: 'word-pairs';    wpRows: number; wpCols: number; wpTimeLimit: number; wpFontSize: number }
+  | { exerciseType: 'rsvp';          rsvpSyntagmWidth: number; rsvpDisplayTime: number };
 
 export interface JoinQueueResponse {
   status: 'matched' | 'waiting';

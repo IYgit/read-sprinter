@@ -18,21 +18,13 @@ const DISPLAY_TIME_OPTIONS = [
 
 const DuelRsvpLobby = ({ onStartSearch, onBack }: DuelRsvpLobbyProps) => {
   const [syntagmWidth, setSyntagmWidth] = useState(3);
-  const [displayTime, setDisplayTime]   = useState(300);
+  const [rsvpDisplayTime, setRsvpDisplayTime]   = useState(300);
 
   const handleSearch = () => {
     onStartSearch({
       exerciseType: 'rsvp',
-      gridSize: 5,
-      fontSize: 20,
-      digitCount: 3,
-      displayTime: 1000,
-      wpRows: 4,
-      wpCols: 4,
-      wpTimeLimit: 60,
-      wpFontSize: 14,
       rsvpSyntagmWidth: syntagmWidth,
-      rsvpDisplayTime: displayTime,
+      rsvpDisplayTime,
     });
   };
 
@@ -76,15 +68,15 @@ const DuelRsvpLobby = ({ onStartSearch, onBack }: DuelRsvpLobbyProps) => {
         <div>
           <p className="text-sm font-medium text-muted-foreground mb-3">
             Час показу синтагми:{' '}
-            <span className="text-accent font-bold text-lg">{displayTime} мс</span>
+            <span className="text-accent font-bold text-lg">{rsvpDisplayTime} мс</span>
           </p>
           <div className="flex gap-2 flex-wrap">
             {DISPLAY_TIME_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
-                onClick={() => setDisplayTime(opt.value)}
+                onClick={() => setRsvpDisplayTime(opt.value)}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  displayTime === opt.value
+                  rsvpDisplayTime === opt.value
                     ? 'bg-accent text-accent-foreground'
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
