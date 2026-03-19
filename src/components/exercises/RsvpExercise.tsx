@@ -108,7 +108,12 @@ const RsvpExercise = () => {
     ? selectedText.questions.filter(q => answers[q.id] === q.correctIndex).length
     : 0;
   const totalQuestions = selectedText?.questions.length || 0;
-  const score = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+
+  const correctRatio = totalQuestions > 0 ? correctCount / totalQuestions : 0;
+  const speedScore = (1000 - displayTime) / 900;                          // 0.0 (1000ms) → 1.0 (100ms)
+  const widthScore = (syntagmWidth - 1) / 4;                              // 0.0 (1 слово) → 1.0 (5 слів)
+  const difficultyFactor = speedScore * 0.5 + widthScore * 0.5;           // 0.0 → 1.0
+  const score = Math.round(correctRatio * 100 * (1 + difficultyFactor));  // 0 → 200
 
   // Save result
   useEffect(() => {
@@ -136,7 +141,7 @@ const RsvpExercise = () => {
           <h2 className="text-3xl font-bold mb-2">Результати</h2>
           <p className="text-muted-foreground mb-8">RSVP — «{selectedText.title}»</p>
 
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <div className="glass-card p-4">
               <p className="text-2xl font-bold text-primary">{score}</p>
               <p className="text-sm text-muted-foreground">Балів</p>
@@ -148,6 +153,10 @@ const RsvpExercise = () => {
             <div className="glass-card p-4">
               <p className="text-2xl font-bold text-foreground">{displayTime} мс</p>
               <p className="text-sm text-muted-foreground">Час показу</p>
+            </div>
+            <div className="glass-card p-4">
+              <p className="text-2xl font-bold text-foreground">{syntagmWidth} сл.</p>
+              <p className="text-sm text-muted-foreground">Ширина синтагми</p>
             </div>
           </div>
 
