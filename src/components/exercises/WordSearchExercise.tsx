@@ -5,17 +5,9 @@ import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
 import { Slider } from '@/components/ui/slider';
 import { calcWordSearchScore } from '@/lib/scoring';
+import { wordSearchApi } from '@/lib/api';
 
 const UKRAINIAN_LETTERS = 'абвгґдеєжзиіїйклмнопрстуфхцчшщьюя';
-
-const WORD_BANK = [
-  'кивати', 'лопата', 'трава', 'музика', 'книга', 'сонце',
-  'вікно', 'школа', 'дорога', 'молоко', 'ліжко', 'стілець',
-  'ранок', 'вечір', 'зірка', 'берег', 'камінь', 'дерево',
-  'квітка', 'вітер', 'хмара', 'місяць', 'листок', 'ягода',
-  'робота', 'ліхтар', 'площа', 'парасон', 'ковдра', 'горіх',
-  'калина', 'пшениця', 'вишня', 'город', 'полуниця',
-];
 
 interface GridData {
   grid: string[][];
@@ -23,8 +15,8 @@ interface GridData {
   wordPositions: { word: string; row: number; startCol: number }[];
 }
 
-function generateGrid(rows: number, cols: number, wordCount: number): GridData {
-  const shuffled = [...WORD_BANK].sort(() => Math.random() - 0.5);
+function generateGrid(rows: number, cols: number, wordCount: number, wordBank: string[]): GridData {
+  const shuffled = [...wordBank].sort(() => Math.random() - 0.5);
   // Filter words that fit in the grid
   const fittingWords = shuffled.filter(w => w.length <= cols);
   const wordsToFind = fittingWords.slice(0, Math.min(wordCount, rows));
@@ -75,6 +67,17 @@ const FONT_SIZE_OPTIONS = [
 const WordSearchExercise = () => {
   const navigate = useNavigate();
 
+  // Word bank loaded from API (replaces hardcoded WORD_BANK)
+  const [wordBank, setWordBank] = useState<string[]>([]);
+  const [wordBankLoading, setWordBankLoading] = useState(true);
+
+  useEffect(() => {
+    wordSearchApi.getWords()
+      .then(setWordBank)
+      .catch(console.error)
+      .finally(() => setWordBankLoading(false));
+  }, []);
+
   // Settings
   const [gridRows, setGridRows] = useState(12);
   const [gridCols, setGridCols] = useState(11);
@@ -88,12 +91,14 @@ const WordSearchExercise = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startGame = useCallback(() => {
-    const data = generateGrid(gridRows, gridCols, wordCount);
+    if (wordBankLoading) return;
+
+    const data = generateGrid(gridRows, gridCols, wordCount, wordBank);
     setGridData(data);
     setFoundWords(new Set());
     setTimeElapsed(0);
     setPhase('playing');
-  }, [gridRows, gridCols, wordCount]);
+  }, [gridRows, gridCols, wordCount, wordBank, wordBankLoading]);
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -231,8 +236,13 @@ const WordSearchExercise = () => {
             </div>
           </div>
 
-          <button onClick={startGame} className="btn-primary w-full flex items-center justify-center gap-2 text-lg">
-            <Play size={22} /> Почати
+          <button
+            onClick={startGame}
+            disabled={wordBankLoading}
+            className="btn-primary w-full flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Play size={22} />
+            {wordBankLoading ? 'Завантаження...' : 'Почати'}
           </button>
         </div>
       </div>

@@ -221,3 +221,7 @@ export const wordPairsApi = {
     apiFetch<WordPairItem[]>(`/api/word-pairs?rows=${rows}&cols=${cols}`),
 };
 
+export const wordSearchApi = {
+  getWords: () => apiFetch<string[]>('/api/word-search/words'),
+};
+
