@@ -144,9 +144,15 @@ const DuelExercise = () => {
     }
   }, [myUsername]);
 
+  // Called when the joinQueue REST request fails — return user to lobby
+  const handleQueueError = useCallback(() => {
+    setPhase('lobby');
+  }, []);
+
   const { connect, disconnect, sendProgress, sendFinish, sendLeave } = useDuelWebSocket({
     onMatchFound: handleMatchFound,
     onDuelEvent: handleDuelEvent,
+    onQueueError: handleQueueError,
     sessionId: matchInfo?.sessionId ?? null,
   });
 
@@ -156,9 +162,10 @@ const DuelExercise = () => {
   }, []);
 
   const handleStartSearch = useCallback((req: JoinQueueRequest) => {
+    disconnect(); // ensure any previous connection is closed before reconnecting
     connect(req);
     setPhase('waiting');
-  }, [connect]);
+  }, [connect, disconnect]);
 
   const handleCancelSearch = useCallback(() => {
     disconnect();
