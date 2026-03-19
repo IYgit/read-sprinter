@@ -203,6 +203,9 @@ export interface JoinQueueRequest {
   wpCols: number;
   wpTimeLimit: number;
   wpFontSize: number;
+  // RSVP exercise
+  rsvpSyntagmWidth: number;
+  rsvpDisplayTime: number;
 }
 
 export interface JoinQueueResponse {

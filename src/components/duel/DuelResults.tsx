@@ -90,7 +90,7 @@ const DuelResults = ({
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Знайдено</span>
+              <span className="text-muted-foreground">{exerciseType === 'rsvp' ? 'Правильно' : 'Знайдено'}</span>
               <span className="font-medium">{myResult?.progress ?? 0}/{totalCells}</span>
             </div>
           </div>
@@ -129,7 +129,7 @@ const DuelResults = ({
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Знайдено</span>
+              <span className="text-muted-foreground">{exerciseType === 'rsvp' ? 'Правильно' : 'Знайдено'}</span>
               <span className="font-medium">{oppFoundText}</span>
             </div>
           </div>
@@ -138,7 +138,7 @@ const DuelResults = ({
 
       <ExerciseStatsChart
         exerciseId={exerciseType}
-        title={`Ваша статистика — ${exerciseType === 'numbers' ? 'Числа' : 'Таблиця Шульте'}`}
+        title={`Ваша статистика — ${{ 'numbers': 'Числа', 'schulte-table': 'Таблиця Шульте', 'word-pairs': 'Словопари', 'rsvp': 'RSVP' }[exerciseType] ?? exerciseType}`}
       />
 
       <div className="flex gap-3">

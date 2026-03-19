@@ -5,18 +5,20 @@ import DuelExerciseSelector from '@/components/duel/DuelExerciseSelector';
 import DuelLobby from '@/components/duel/DuelLobby';
 import DuelNumbersLobby from '@/components/duel/DuelNumbersLobby';
 import DuelWordPairsLobby from '@/components/duel/DuelWordPairsLobby';
+import DuelRsvpLobby from '@/components/duel/DuelRsvpLobby';
 import DuelWaiting from '@/components/duel/DuelWaiting';
 import DuelCountdown from '@/components/duel/DuelCountdown';
 import DuelSchulteGame from '@/components/duel/DuelSchulteGame';
 import DuelNumbersGame from '@/components/duel/DuelNumbersGame';
 import DuelWordPairsGame from '@/components/duel/DuelWordPairsGame';
+import DuelRsvpGame from '@/components/duel/DuelRsvpGame';
 import DuelResults from '@/components/duel/DuelResults';
 import { useDuelWebSocket, type MatchFoundEvent, type DuelEvent, type ParticipantResult } from '@/hooks/useDuelWebSocket';
 import { type JoinQueueRequest } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
 
 type Phase = 'exercise-select' | 'lobby' | 'waiting' | 'countdown' | 'playing' | 'results';
-type ExerciseType = 'schulte-table' | 'numbers' | 'word-pairs';
+type ExerciseType = 'schulte-table' | 'numbers' | 'word-pairs' | 'rsvp';
 
 interface MatchInfo {
   sessionId: number;
@@ -38,6 +40,12 @@ interface MatchInfo {
   wpCols: number;
   wpTimeLimit: number;
   wpFontSize: number;
+  // RSVP exercise
+  rsvpSyntagmWidth: number;
+  rsvpDisplayTime: number;
+  rsvpTextTitle: string;
+  rsvpTextContent: string;
+  rsvpQuestions: { id: number; text: string; options: string[]; correctIndex: number }[];
 }
 
 function buildExerciseLabel(info: MatchInfo): string {
@@ -46,6 +54,9 @@ function buildExerciseLabel(info: MatchInfo): string {
   }
   if (info.exerciseType === 'word-pairs') {
     return `Словопари ${info.wpRows}×${info.wpCols}, ${info.wpTimeLimit}с`;
+  }
+  if (info.exerciseType === 'rsvp') {
+    return `RSVP — ${info.rsvpSyntagmWidth} сл., ${info.rsvpDisplayTime} мс`;
   }
   return `Таблиця Шульте ${info.gridSize}×${info.gridSize}`;
 }
@@ -83,6 +94,11 @@ const DuelExercise = () => {
       wpCols: event.wpCols ?? 4,
       wpTimeLimit: event.wpTimeLimit ?? 60,
       wpFontSize: event.wpFontSize ?? 14,
+      rsvpSyntagmWidth: event.rsvpSyntagmWidth ?? 3,
+      rsvpDisplayTime: event.rsvpDisplayTime ?? 300,
+      rsvpTextTitle: event.rsvpTextTitle ?? '',
+      rsvpTextContent: event.rsvpTextContent ?? '',
+      rsvpQuestions: event.rsvpQuestions ?? [],
     });
     setPhase('countdown');
   }, []);
@@ -211,6 +227,10 @@ const DuelExercise = () => {
         <DuelWordPairsLobby onStartSearch={handleStartSearch} onBack={handleBackToSelect} />
       )}
 
+      {phase === 'lobby' && selectedExercise === 'rsvp' && (
+        <DuelRsvpLobby onStartSearch={handleStartSearch} onBack={handleBackToSelect} />
+      )}
+
       {phase === 'waiting' && (
         <DuelWaiting onCancel={handleCancelSearch} />
       )}
@@ -261,6 +281,29 @@ const DuelExercise = () => {
             wpCols: matchInfo.wpCols,
             wpTimeLimit: matchInfo.wpTimeLimit,
             wpFontSize: matchInfo.wpFontSize,
+            totalCells: matchInfo.totalCells,
+          }}
+          opponentProgress={opponentProgress}
+          opponentFinished={opponentFinished}
+          opponentDurationMs={opponentDurationMs}
+          opponentDisconnected={opponentDisconnected}
+          opponentLeft={opponentLeft}
+          onProgress={(progress, errors) => sendProgress(matchInfo.sessionId, progress, errors)}
+          onFinish={handleMyFinish}
+          onLeave={handleLeave}
+        />
+      )}
+
+      {phase === 'playing' && matchInfo && matchInfo.exerciseType === 'rsvp' && (
+        <DuelRsvpGame
+          matchInfo={{
+            sessionId: matchInfo.sessionId,
+            opponentName: matchInfo.opponentName,
+            rsvpSyntagmWidth: matchInfo.rsvpSyntagmWidth,
+            rsvpDisplayTime: matchInfo.rsvpDisplayTime,
+            rsvpTextTitle: matchInfo.rsvpTextTitle,
+            rsvpTextContent: matchInfo.rsvpTextContent,
+            rsvpQuestions: matchInfo.rsvpQuestions,
             totalCells: matchInfo.totalCells,
           }}
           opponentProgress={opponentProgress}

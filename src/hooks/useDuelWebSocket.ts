@@ -48,6 +48,13 @@ export interface MatchFoundEvent {
   wpCols?: number;
   wpTimeLimit?: number;
   wpFontSize?: number;
+  // RSVP exercise
+  rsvpSyntagmWidth?: number;
+  rsvpDisplayTime?: number;
+  rsvpTextId?: number;
+  rsvpTextTitle?: string;
+  rsvpTextContent?: string;
+  rsvpQuestions?: { id: number; text: string; options: string[]; correctIndex: number }[];
 }
 
 export interface ParticipantResult {
