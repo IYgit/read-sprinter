@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
 import { wordPairsApi } from '@/lib/api';
+import { calcWordPairsScore } from '@/lib/scoring';
 
 interface WordPair {
   word1: string;
@@ -51,12 +52,22 @@ const WordPairsExercise = () => {
   const [phase, setPhase] = useState<'settings' | 'loading' | 'playing' | 'results'>('settings');
   const [grid, setGrid] = useState<CellState[][]>([]);
   const [timeLeft, setTimeLeft] = useState(0);
-  const [score, setScore] = useState(0);
+  const [durationMs, setDurationMs] = useState(0);
   const [correctSelections, setCorrectSelections] = useState(0);
   const [wrongSelections, setWrongSelections] = useState(0);
   const [missedPairs, setMissedPairs] = useState(0);
   const [totalDifferent, setTotalDifferent] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef(0);
+
+  // Реактивне обчислення балів — оновлюється після кожного кліку та кожну секунду.
+  // В фазі 'playing' використовує поточний elapsed (точність: 1 сек).
+  // В фазі 'results' використовує точний finalMs, збережений у durationMs.
+  const score = calcWordPairsScore(
+    correctSelections,
+    wrongSelections,
+    phase === 'results' ? durationMs : (timeLimit - timeLeft) * 1000,
+  );
 
   const startGame = useCallback(async () => {
     setPhase('loading');
@@ -66,10 +77,11 @@ const WordPairsExercise = () => {
       const diffCount = newGrid.flat().filter(c => c.pair.isDifferent).length;
       setGrid(newGrid);
       setTimeLeft(timeLimit);
-      setScore(0);
+      setDurationMs(0);
       setCorrectSelections(0);
       setWrongSelections(0);
       setTotalDifferent(diffCount);
+      startTimeRef.current = Date.now();
       setPhase('playing');
     } catch {
       // fallback: return to settings on error
@@ -99,13 +111,13 @@ const WordPairsExercise = () => {
 
   const finishGame = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
+    const finalMs = Date.now() - startTimeRef.current;
     const missed = grid.flat().filter(c => c.pair.isDifferent && !c.selected).length;
     setMissedPairs(missed);
+    setDurationMs(finalMs);
     setGrid(prev => prev.map(row => row.map(cell => ({ ...cell, revealed: true }))));
-    // Add time bonus: +2 pts per second remaining
-    setScore(prev => prev + timeLeft * 2);
     setPhase('results');
-  }, [grid, timeLeft]);
+  }, [grid]);
 
   const handleCellClick = (r: number, c: number) => {
     if (phase !== 'playing' || grid[r][c].selected) return;
@@ -121,10 +133,8 @@ const WordPairsExercise = () => {
     });
 
     if (isCorrect) {
-      setScore(prev => prev + 100);
       setCorrectSelections(prev => prev + 1);
     } else {
-      setScore(prev => prev - 50);
       setWrongSelections(prev => prev + 1);
     }
   };
@@ -139,9 +149,9 @@ const WordPairsExercise = () => {
 
   useEffect(() => {
     if (phase === 'results') {
-      saveExerciseResult('word-pairs', Math.max(0, score));
+      saveExerciseResult('word-pairs', score);
     }
-  }, [phase]);
+  }, [phase, score]);
 
   if (phase === 'settings') {
     return (
@@ -246,7 +256,7 @@ const WordPairsExercise = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <div className="glass-card p-4">
-              <p className="text-2xl font-bold text-primary">{Math.max(0, score)}</p>
+              <p className="text-2xl font-bold text-primary">{score}</p>
               <p className="text-xs text-muted-foreground">Балів</p>
             </div>
             <div className="glass-card p-4">
@@ -298,7 +308,7 @@ const WordPairsExercise = () => {
         </button>
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
-            Бали: <span className="text-primary font-bold">{Math.max(0, score)}</span>
+            Бали: <span className="text-primary font-bold">{score}</span>
           </span>
           <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full ${timeLeft <= 10 ? 'bg-destructive/20 text-destructive' : 'bg-primary/10 text-primary'}`}>
             <Timer size={16} />

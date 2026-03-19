@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { LogOut, WifiOff, UserX, Eye } from 'lucide-react';
 import { saveExerciseResult } from '@/lib/exerciseStats';
+import { calcRsvpScore } from '@/lib/scoring';
 
 interface RsvpQuestion {
   id: number;
@@ -124,11 +125,7 @@ const DuelRsvpGame = ({
         hasSaved.current = true;
         const durationMs = Date.now() - startTimeRef.current;
 
-        const correctRatio   = rsvpQuestions.length > 0 ? correct / rsvpQuestions.length : 0;
-        const speedScore     = (1000 - rsvpDisplayTime) / 900;
-        const widthScore     = (rsvpSyntagmWidth - 1) / 4;
-        const difficultyFactor = speedScore * 0.5 + widthScore * 0.5;
-        const score          = Math.round(correctRatio * 100 * (1 + difficultyFactor));
+        const score = calcRsvpScore(correct, rsvpQuestions.length, rsvpDisplayTime, rsvpSyntagmWidth);
 
         saveExerciseResult('rsvp', score);
         setFinished(true);

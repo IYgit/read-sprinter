@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { textsApi, type TextDto } from '@/lib/api';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
+import { calcRsvpScore } from '@/lib/scoring';
 
 const FONT_SIZE_OPTIONS = [
   { label: 'M', value: 28 },
@@ -109,11 +110,7 @@ const RsvpExercise = () => {
     : 0;
   const totalQuestions = selectedText?.questions.length || 0;
 
-  const correctRatio = totalQuestions > 0 ? correctCount / totalQuestions : 0;
-  const speedScore = (1000 - displayTime) / 900;                          // 0.0 (1000ms) → 1.0 (100ms)
-  const widthScore = (syntagmWidth - 1) / 4;                              // 0.0 (1 слово) → 1.0 (5 слів)
-  const difficultyFactor = speedScore * 0.5 + widthScore * 0.5;           // 0.0 → 1.0
-  const score = Math.round(correctRatio * 100 * (1 + difficultyFactor));  // 0 → 200
+  const score = calcRsvpScore(correctCount, totalQuestions, displayTime, syntagmWidth);
 
   // Save result
   useEffect(() => {

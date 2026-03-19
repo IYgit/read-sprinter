@@ -3,6 +3,7 @@ import { ArrowLeft, Play, Settings, Trophy, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
+import { calcNumbersScore } from '@/lib/scoring';
 
 interface RoundResult {
   number: string;
@@ -114,9 +115,7 @@ const NumbersExercise = () => {
   }, []);
 
   const correctCount = results.filter((r) => r.correct).length;
-  const timePenalty = Math.floor(durationMs / 1000) * 2;
-  const errorPenalty = (results.length - correctCount) * 20;
-  const score = Math.max(0, correctCount * 100 - timePenalty - errorPenalty);
+  const score = calcNumbersScore(correctCount, durationMs, results.length - correctCount);
   const accuracy = results.length > 0
     ? Math.round((correctCount / results.length) * 100)
     : 0;

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { LogOut, Zap, WifiOff, UserX } from 'lucide-react';
 import { saveExerciseResult } from '@/lib/exerciseStats';
+import { calcNumbersScore } from '@/lib/scoring';
 
 interface MatchInfo {
   sessionId: number;
@@ -105,9 +106,7 @@ const DuelNumbersGame = ({
 
       // Score considers both accuracy and speed.
       // +100 per correct answer, -20 per error, -2 per second spent.
-      const timePenaltyPts = Math.floor(finalMs / 1000) * 2;
-      const errorPenaltyPts = newErrors * 20;
-      const score = Math.max(0, newCorrect * 100 - timePenaltyPts - errorPenaltyPts);
+      const score = calcNumbersScore(newCorrect, finalMs, newErrors);
       onFinish(finalMs, newErrors, score, completedRounds);
 
       if (!hasSaved.current) {

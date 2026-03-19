@@ -3,6 +3,7 @@ import { ArrowLeft, Play, Settings, Trophy, RotateCcw, Grid3X3 } from 'lucide-re
 import { useNavigate } from 'react-router-dom';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
+import { calcSchulteScore } from '@/lib/scoring';
 
 function shuffleArray<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -77,9 +78,7 @@ const SchulteTableExercise = () => {
         const finalTime = Date.now() - startTime;
         setElapsed(finalTime);
         // Score: base 1000, minus time penalty, minus error penalty
-        const timePenalty = Math.floor(finalTime / 100);
-        const errorPenalty = errors * 50;
-        const calculatedScore = Math.max(0, 1000 - timePenalty - errorPenalty);
+        const calculatedScore = calcSchulteScore(finalTime, errors);
         setScore(calculatedScore);
         setPhase('results');
       } else {

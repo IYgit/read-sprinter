@@ -1,6 +1,7 @@
-﻿﻿import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { LogOut, Zap, WifiOff, UserX } from 'lucide-react';
 import { saveExerciseResult } from '@/lib/exerciseStats';
+import { calcSchulteScore } from '@/lib/scoring';
 
 interface MatchInfo {
   sessionId: number;
@@ -91,9 +92,7 @@ const DuelSchulteGame = ({
         setElapsed(finalMs);
         setFinished(true);
 
-        const timePenalty = Math.floor(finalMs / 100);
-        const errorPenalty = errors * 50;
-        const score = Math.max(0, 1000 - timePenalty - errorPenalty);
+        const score = calcSchulteScore(finalMs, errors);
 
         // onProgress is intentionally NOT called here — onFinish already carries progress.
         // Sending both would cause OPPONENT_PROGRESS to arrive after OPPONENT_FINISHED

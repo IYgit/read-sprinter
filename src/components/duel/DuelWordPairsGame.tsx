@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { LogOut, Zap, WifiOff, UserX, Timer } from 'lucide-react';
 import { saveExerciseResult } from '@/lib/exerciseStats';
+import { calcWordPairsScore } from '@/lib/scoring';
 
 interface WordPair {
   w1: string;
@@ -112,7 +113,7 @@ const DuelWordPairsGame = ({
     // Reveal all unselected cells
     setGrid((prev) => prev.map((c) => ({ ...c, revealed: true })));
 
-    const score = Math.max(0, currentCorrect * 100 - currentWrong * 50 - Math.floor(finalMs / 1000) * 2);
+    const score = calcWordPairsScore(currentCorrect, currentWrong, finalMs);
     onFinish(finalMs, currentWrong, score, currentCorrect);
 
     if (!hasSaved.current) {
