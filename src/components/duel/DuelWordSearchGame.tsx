@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { LogOut, Zap, WifiOff, UserX } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import { calcWordSearchScore } from '@/lib/scoring';
 
@@ -34,13 +35,13 @@ interface DuelWordSearchGameProps {
   onLeave: () => void;
 }
 
-function formatTime(ms: number): string {
+function formatTime(ms: number, secondsUnit = 'с'): string {
   const totalSec = Math.floor(ms / 1000);
   const min = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
   return min > 0
     ? `${min}:${sec.toString().padStart(2, '0')}`
-    : `${totalSec}с`;
+    : `${totalSec}${secondsUnit}`;
 }
 
 const DuelWordSearchGame = ({
@@ -58,6 +59,7 @@ const DuelWordSearchGame = ({
     wsGrid, wsWords, wsWordPositions,
     wsCols, wsFontSize, totalCells, opponentName,
   } = matchInfo;
+  const { t } = useTranslation();
 
   const [foundWords, setFoundWords] = useState<Set<string>>(new Set());
   const [elapsed,    setElapsed]    = useState(0);
@@ -130,7 +132,7 @@ const DuelWordSearchGame = ({
   const myPct       = finished ? 100 : totalCells > 0 ? (foundWords.size / totalCells) * 100 : 0;
 
   const opponentStatusText = opponentFinished
-    ? `✅ Знайшов усі! ${opponentDurationMs != null ? formatTime(opponentDurationMs) : ''}`.trim()
+    ? t('duel.opponentFoundAll', { time: opponentDurationMs != null ? formatTime(opponentDurationMs, t('common.seconds')) : '' }).trim()
     : `${opponentProgress}/${totalCells}`;
 
   return (
@@ -139,13 +141,13 @@ const DuelWordSearchGame = ({
       {opponentDisconnected && (
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm mb-4">
           <WifiOff size={15} />
-          Суперник відключився від мережі
+          {t('duel.opponentDisconnected')}
         </div>
       )}
       {opponentLeft && (
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm mb-4">
           <UserX size={15} />
-          Суперник покинув дуель
+          {t('duel.opponentLeft')}
         </div>
       )}
 
@@ -168,17 +170,17 @@ const DuelWordSearchGame = ({
       {/* Header: timer + found count */}
       <div className="flex items-center justify-between mb-3">
         <div className="glass-card px-4 py-2 text-sm font-mono">
-          ⏱ {formatTime(elapsed)}
+          ⏱ {formatTime(elapsed, t('common.seconds'))}
         </div>
         <div className="text-sm text-muted-foreground">
-          Знайдено:{' '}
+          {t('duel.found')}:{' '}
           <span className="font-bold text-primary">{foundWords.size}/{totalCells}</span>
         </div>
       </div>
 
       {/* Words to find */}
       <div className="glass-card p-4 mb-3">
-        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">Знайдіть:</p>
+        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">{t('wordSearch.wordsToFind')}</p>
         <div className="flex gap-2 flex-wrap">
           {wsWords.map(word => (
             <span
@@ -228,7 +230,7 @@ const DuelWordSearchGame = ({
       {/* My progress bar */}
       <div className="glass-card p-4 mb-4">
         <div className="flex items-center justify-between mb-2 text-sm">
-          <span className="text-muted-foreground">Мій прогрес</span>
+          <span className="text-muted-foreground">{t('duel.myProgress')}</span>
           <span className="text-muted-foreground">{foundWords.size}/{totalCells}</span>
         </div>
         <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -246,7 +248,7 @@ const DuelWordSearchGame = ({
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-muted-foreground border border-border hover:border-destructive/40 hover:text-destructive transition-colors"
           >
             <LogOut size={15} />
-            Покинути дуель
+            {t('duel.leaveGame')}
           </button>
         </div>
       )}
@@ -254,14 +256,14 @@ const DuelWordSearchGame = ({
       {finished && !opponentFinished && (
         <div className="text-center mt-2">
           <p className="text-sm text-muted-foreground">
-            Ви знайшли всі слова! Очікуємо результати суперника...
+            {t('duel.waitingForOpponent')}
           </p>
           <button
             onClick={onLeave}
             className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-muted-foreground border border-border hover:text-foreground transition-colors"
           >
             <Zap size={15} />
-            Не чекати (покинути дуель)
+            {t('duel.noWait')}
           </button>
         </div>
       )}

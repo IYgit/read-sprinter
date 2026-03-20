@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import DuelExerciseSelector from '@/components/duel/DuelExerciseSelector';
 import DuelLobby from '@/components/duel/DuelLobby';
 import DuelNumbersLobby from '@/components/duel/DuelNumbersLobby';
@@ -74,31 +76,32 @@ interface MatchInfo {
   lsLetterCount: number;
 }
 
-function buildExerciseLabel(info: MatchInfo): string {
+function buildExerciseLabel(info: MatchInfo, t: (key: string, opts?: object) => string): string {
   if (info.exerciseType === 'numbers') {
-    return `Числа — ${info.digitCount} цифри, ${info.totalRounds} раундів`;
+    return `${t('numbers.title')} — ${info.digitCount} ${t('numbers.digits').toLowerCase()}, ${info.totalRounds} rounds`;
   }
   if (info.exerciseType === 'word-pairs') {
-    return `Словопари ${info.wpRows}×${info.wpCols}, ${info.wpTimeLimit}с`;
+    return `${t('wordPairs.title')} ${info.wpRows}×${info.wpCols}, ${info.wpTimeLimit}${t('common.seconds')}`;
   }
   if (info.exerciseType === 'rsvp') {
-    return `RSVP — ${info.rsvpSyntagmWidth} сл., ${info.rsvpDisplayTime} мс`;
+    return `RSVP — ${info.rsvpSyntagmWidth} ${t('common.wordsLoading').slice(0,2)}, ${info.rsvpDisplayTime} ${t('common.ms')}`;
   }
   if (info.exerciseType === 'word-search') {
-    return `Пошук слів ${info.wsRows}×${info.wsCols}, ${info.wsWordCount} слів`;
+    return `${t('wordSearch.title')} ${info.wsRows}×${info.wsCols}, ${info.wsWordCount} ${t('wordSearch.wordCount').toLowerCase()}`;
   }
   if (info.exerciseType === 'syntagm-reading') {
-    return `Синтагми — ${info.syntagmSyntagmWidth} сл., ${info.syntagmDisplayTime} мс`;
+    return `${t('syntagm.title')} — ${info.syntagmSyntagmWidth}, ${info.syntagmDisplayTime} ${t('common.ms')}`;
   }
   if (info.exerciseType === 'letter-search') {
-    return `Пошук букв ${info.lsCols}×${info.lsRows}, ${info.lsLetterCount} букв`;
+    return `${t('letterSearch.title')} ${info.lsCols}×${info.lsRows}, ${info.lsLetterCount} ${t('letterSearch.letterCount').toLowerCase()}`;
   }
-  return `Таблиця Шульте ${info.gridSize}×${info.gridSize}`;
+  return `${t('schulte.title')} ${info.gridSize}×${info.gridSize}`;
 }
 
 const DuelExercise = () => {
   const navigate = useNavigate();
   const myUsername = getCurrentUser() ?? '';
+  const { t } = useTranslation();
 
   const [phase, setPhase] = useState<Phase>('exercise-select');
   const [selectedExercise, setSelectedExercise] = useState<ExerciseType | null>(null);
@@ -261,13 +264,16 @@ const DuelExercise = () => {
   return (
     <div className="max-w-2xl mx-auto p-4 lg:p-6">
       {(phase === 'exercise-select' || phase === 'lobby') && (
-        <button
-          onClick={() => phase === 'exercise-select' ? navigate('/') : handleBackToSelect()}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
-        >
-          <ArrowLeft size={20} />
-          {phase === 'exercise-select' ? 'До вибору вправ' : 'До вибору вправи'}
-        </button>
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => phase === 'exercise-select' ? navigate('/') : handleBackToSelect()}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft size={20} />
+            {phase === 'exercise-select' ? t('common.backHome') : t('duel.back')}
+          </button>
+          <LanguageSwitcher />
+        </div>
       )}
 
       {phase === 'exercise-select' && (
@@ -310,7 +316,7 @@ const DuelExercise = () => {
         <DuelCountdown
           countdown={countdown}
           opponentName={matchInfo.opponentName}
-          exerciseLabel={buildExerciseLabel(matchInfo)}
+          exerciseLabel={buildExerciseLabel(matchInfo, t)}
         />
       )}
 

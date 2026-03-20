@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { ArrowLeft, Play, Trophy, RotateCcw, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { textsApi, type TextDto } from '@/lib/api';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import { calcSyntagmScore } from '@/lib/scoring';
@@ -14,6 +15,7 @@ const FONT_SIZE_OPTIONS = [
 
 const SyntagmReadingExercise = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Texts from API
   const [texts, setTexts] = useState<TextDto[]>([]);
@@ -128,81 +130,58 @@ const SyntagmReadingExercise = () => {
   if (phase === 'results' && selectedText) {
     return (
       <div className="max-w-2xl mx-auto p-4 lg:p-6">
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
-        >
-          <ArrowLeft size={20} />
-          До вибору вправ
+        <button onClick={() => navigate('/')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6">
+          <ArrowLeft size={20} /> {t('common.back')}
         </button>
-
         <div className="glass-card p-8 text-center">
           <Trophy size={48} className="text-accent mx-auto mb-4" />
-          <h2 className="text-3xl font-bold mb-2">Результати</h2>
-          <p className="text-muted-foreground mb-8">Читання синтагмами — «{selectedText.title}»</p>
+          <h2 className="text-3xl font-bold mb-2">{t('common.results')}</h2>
+          <p className="text-muted-foreground mb-8">{t('syntagm.resultSubtitle', { title: selectedText.title })}</p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <div className="glass-card p-4">
               <p className="text-2xl font-bold text-primary">{score}</p>
-              <p className="text-sm text-muted-foreground">Балів</p>
+              <p className="text-sm text-muted-foreground">{t('common.score')}</p>
             </div>
             <div className="glass-card p-4">
               <p className="text-2xl font-bold text-accent">{correctCount}/{totalQuestions}</p>
-              <p className="text-sm text-muted-foreground">Правильно</p>
+              <p className="text-sm text-muted-foreground">{t('common.correct')}</p>
             </div>
             <div className="glass-card p-4">
-              <p className="text-2xl font-bold text-foreground">{displayTime} мс</p>
-              <p className="text-sm text-muted-foreground">Час підсвітки</p>
+              <p className="text-2xl font-bold text-foreground">{displayTime} {t('common.ms')}</p>
+              <p className="text-sm text-muted-foreground">{t('syntagm.highlightTime')}</p>
             </div>
             <div className="glass-card p-4">
-              <p className="text-2xl font-bold text-foreground">{syntagmWidth} сл.</p>
-              <p className="text-sm text-muted-foreground">Ширина синтагми</p>
+              <p className="text-2xl font-bold text-foreground">{syntagmWidth}</p>
+              <p className="text-sm text-muted-foreground">{t('syntagm.syntagmWidthLabel')}</p>
             </div>
           </div>
 
-          {/* Question details */}
           <div className="text-left space-y-2 mb-8">
-            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">
-              Відповіді
-            </h3>
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">{t('syntagm.answers')}</h3>
             {selectedText.questions.map((q) => {
               const userAnswer = answers[q.id];
               const isCorrect = userAnswer === q.correctIndex;
               return (
-                <div
-                  key={q.id}
-                  className={`p-3 rounded-xl border ${
-                    isCorrect
-                      ? 'border-success/30 bg-success/5'
-                      : 'border-destructive/30 bg-destructive/5'
-                  }`}
-                >
+                <div key={q.id} className={`p-3 rounded-xl border ${isCorrect ? 'border-success/30 bg-success/5' : 'border-destructive/30 bg-destructive/5'}`}>
                   <p className="text-sm font-medium mb-1">{q.text}</p>
                   <p className="text-xs text-muted-foreground">
-                    Ваша відповідь: <span className={isCorrect ? 'text-success' : 'text-destructive'}>
-                      {userAnswer !== undefined ? q.options[userAnswer] : '—'}
-                    </span>
-                    {!isCorrect && (
-                      <> · Правильно: <span className="text-success">{q.options[q.correctIndex]}</span></>
-                    )}
+                    {t('syntagm.yourAnswer')} <span className={isCorrect ? 'text-success' : 'text-destructive'}>{userAnswer !== undefined ? q.options[userAnswer] : '—'}</span>
+                    {!isCorrect && (<> · {t('syntagm.correctAnswer')} <span className="text-success">{q.options[q.correctIndex]}</span></>)}
                   </p>
                 </div>
               );
             })}
           </div>
 
-          <ExerciseStatsChart exerciseId="syntagm-reading" title="Статистика — Читання синтагмами" />
+          <ExerciseStatsChart exerciseId="syntagm-reading" title={t('syntagm.history')} />
 
           <div className="flex gap-4 justify-center mt-6">
             <button onClick={() => { setPhase('settings'); setSelectedText(null); }} className="btn-primary flex items-center gap-2">
-              <RotateCcw size={18} />
-              Ще раз
+              <RotateCcw size={18} /> {t('common.restart')}
             </button>
-            <button
-              onClick={() => navigate('/')}
-              className="px-6 py-3 rounded-xl border border-border hover:bg-secondary/50 transition-colors"
-            >
-              До вправ
+            <button onClick={() => navigate('/')} className="px-6 py-3 rounded-xl border border-border hover:bg-secondary/50 transition-colors">
+              {t('common.toExercises')}
             </button>
           </div>
         </div>
@@ -215,47 +194,28 @@ const SyntagmReadingExercise = () => {
     const allAnswered = selectedText.questions.every(q => answers[q.id] !== undefined);
     return (
       <div className="max-w-2xl mx-auto p-4 lg:p-6">
-        <button
-          onClick={() => { setPhase('settings'); setSelectedText(null); }}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
-        >
-          <ArrowLeft size={20} />
-          Назад
+        <button onClick={() => { setPhase('settings'); setSelectedText(null); }} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6">
+          <ArrowLeft size={20} /> {t('common.back')}
         </button>
-
         <div className="glass-card p-8">
-          <h2 className="text-2xl font-bold mb-2 text-center">Перевірка розуміння</h2>
-          <p className="text-muted-foreground text-center mb-8">Дайте відповідь на питання за текстом</p>
-
+          <h2 className="text-2xl font-bold mb-2 text-center">{t('syntagm.comprehension')}</h2>
+          <p className="text-muted-foreground text-center mb-8">{t('syntagm.comprehensionSubtitle')}</p>
           <div className="space-y-6">
             {selectedText.questions.map((q, qi) => (
               <div key={q.id}>
                 <p className="font-medium mb-3">{qi + 1}. {q.text}</p>
                 <div className="space-y-2">
                   {q.options.map((opt, oi) => (
-                    <button
-                      key={oi}
-                      onClick={() => handleAnswer(q.id, oi)}
-                      className={`w-full text-left p-3 rounded-xl border-2 transition-all ${
-                        answers[q.id] === oi
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border bg-card/50 hover:border-primary/50'
-                      }`}
-                    >
-                      {opt}
-                    </button>
+                    <button key={oi} onClick={() => handleAnswer(q.id, oi)}
+                      className={`w-full text-left p-3 rounded-xl border-2 transition-all ${answers[q.id] === oi ? 'border-primary bg-primary/10' : 'border-border bg-card/50 hover:border-primary/50'}`}
+                    >{opt}</button>
                   ))}
                 </div>
               </div>
             ))}
           </div>
-
-          <button
-            onClick={submitAnswers}
-            disabled={!allAnswered}
-            className="btn-primary w-full mt-8 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Перевірити
+          <button onClick={submitAnswers} disabled={!allAnswered} className="btn-primary w-full mt-8 disabled:opacity-40 disabled:cursor-not-allowed">
+            {t('syntagm.submit')}
           </button>
         </div>
       </div>
@@ -267,61 +227,37 @@ const SyntagmReadingExercise = () => {
     return (
       <div className="max-w-2xl mx-auto p-4 lg:p-6">
         <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={() => { pauseReading(); setPhase('settings'); setSelectedText(null); }}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft size={20} />
-            Зупинити
+          <button onClick={() => { pauseReading(); setPhase('settings'); setSelectedText(null); }} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft size={20} /> {t('common.stop')}
           </button>
           <div className="text-sm text-muted-foreground">
-            {syntagmWidth} сл. · {displayTime} мс
+            {syntagmWidth} · {displayTime} {t('common.ms')}
           </div>
         </div>
-
-        {/* Progress */}
         <div className="progress-bar mb-6">
           <div className="progress-fill" style={{ width: `${progress}%` }} />
         </div>
-
-        {/* Full text with highlighted syntagm */}
         <div className="glass-card p-6 lg:p-8 mb-6">
           <p className="font-reading leading-[2.2] text-left" style={{ fontSize: `${fontSize}px` }}>
             {words.map((word, index) => {
               const isHighlighted = currentChunk && index >= currentChunk.start && index < currentChunk.end;
               const isRead = currentChunk && index < currentChunk.start;
-
               return (
-                <span
-                  key={index}
-                  className={`inline-block mx-0.5 px-0.5 rounded transition-all duration-150 ${
-                    isHighlighted
-                      ? 'bg-accent/20 text-accent font-semibold'
-                      : isRead
-                        ? 'text-foreground/50'
-                        : 'text-muted-foreground/40'
-                  }`}
-                >
+                <span key={index} className={`inline-block mx-0.5 px-0.5 rounded transition-all duration-150 ${isHighlighted ? 'bg-accent/20 text-accent font-semibold' : isRead ? 'text-foreground/50' : 'text-muted-foreground/40'}`}>
                   {word}
                 </span>
               );
             })}
           </p>
         </div>
-
-        {/* Controls */}
         <div className="flex justify-center gap-4">
           {!isPlaying ? (
             <button onClick={startReading} className="btn-primary flex items-center gap-2 text-lg">
-              <Play size={22} />
-              {currentChunkIndex === 0 ? 'Старт' : 'Продовжити'}
+              <Play size={22} /> {currentChunkIndex === 0 ? t('common.start') : t('common.resume')}
             </button>
           ) : (
-            <button
-              onClick={pauseReading}
-              className="px-6 py-3 rounded-xl border border-border hover:bg-secondary/50 transition-colors flex items-center gap-2"
-            >
-              Пауза
+            <button onClick={pauseReading} className="px-6 py-3 rounded-xl border border-border hover:bg-secondary/50 transition-colors flex items-center gap-2">
+              {t('common.pause')}
             </button>
           )}
         </div>
@@ -332,119 +268,70 @@ const SyntagmReadingExercise = () => {
   // SETTINGS
   return (
     <div className="max-w-2xl mx-auto p-4 lg:p-6">
-      <button
-        onClick={() => navigate('/')}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
-      >
-        <ArrowLeft size={20} />
-        До вибору вправ
+      <button onClick={() => navigate('/')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6">
+        <ArrowLeft size={20} /> {t('common.back')}
       </button>
-
       <div className="glass-card p-8">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <BookOpen size={32} className="text-primary" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Читання синтагмами</h2>
-          <p className="text-muted-foreground">
-            Весь текст на екрані, але підсвічується одна синтагма за раз. Читайте разом із підсвіткою, потім — контрольні питання.
-          </p>
+          <h2 className="text-2xl font-bold mb-2">{t('syntagm.title')}</h2>
+          <p className="text-muted-foreground">{t('syntagm.subtitle')}</p>
         </div>
-
         <div className="space-y-6 mb-8">
-          {/* Syntagm width */}
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-3">
-              Ширина синтагми: <span className="text-primary font-bold text-lg">{syntagmWidth} {syntagmWidth === 1 ? 'слово' : syntagmWidth < 5 ? 'слова' : 'слів'}</span>
+              {t('syntagm.syntagmWidth')} <span className="text-primary font-bold text-lg">{syntagmWidth} {t('syntagm.wordUnit', { count: syntagmWidth })}</span>
             </label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => setSyntagmWidth(n)}
-                  className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
-                    syntagmWidth === n
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
-                  }`}
-                >
-                  {n}
-                </button>
+                <button key={n} onClick={() => setSyntagmWidth(n)}
+                  className={`flex-1 py-3 rounded-xl font-semibold transition-all ${syntagmWidth === n ? 'bg-primary text-primary-foreground' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}
+                >{n}</button>
               ))}
             </div>
           </div>
-
-          {/* Display time */}
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-3">
-              Час підсвітки: <span className="text-accent font-bold text-lg">{displayTime} мс</span>
+              {t('syntagm.displayTime')} <span className="text-accent font-bold text-lg">{displayTime} {t('common.ms')}</span>
             </label>
             <div className="flex gap-2 flex-wrap">
-              {[100, 200, 300, 500, 700, 1000].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setDisplayTime(t)}
-                  className={`px-4 py-3 rounded-xl font-semibold transition-all ${
-                    displayTime === t
-                      ? 'bg-accent text-accent-foreground'
-                      : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
-                  }`}
-                >
-                  {t >= 1000 ? `${t / 1000}с` : `${t}мс`}
-                </button>
+              {[100, 200, 300, 500, 700, 1000].map((time) => (
+                <button key={time} onClick={() => setDisplayTime(time)}
+                  className={`px-4 py-3 rounded-xl font-semibold transition-all ${displayTime === time ? 'bg-accent text-accent-foreground' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}
+                >{time >= 1000 ? `${time / 1000}${t('common.seconds')}` : `${time}${t('common.ms')}`}</button>
               ))}
             </div>
           </div>
-
-          {/* Font size */}
           <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-3">
-              Розмір шрифта
-            </label>
+            <label className="block text-sm font-medium text-muted-foreground mb-3">{t('common.fontSize')}</label>
             <div className="flex gap-2">
               {FONT_SIZE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => setFontSize(opt.value)}
-                  className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
-                    fontSize === opt.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
-                  }`}
-                >
-                  {opt.label}
-                </button>
+                <button key={opt.value} onClick={() => setFontSize(opt.value)}
+                  className={`flex-1 py-3 rounded-xl font-semibold transition-all ${fontSize === opt.value ? 'bg-primary text-primary-foreground' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}
+                >{opt.label}</button>
               ))}
             </div>
           </div>
-
-          {/* Text selection */}
           <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-3">
-              Оберіть текст
-            </label>
+            <label className="block text-sm font-medium text-muted-foreground mb-3">{t('syntagm.selectText')}</label>
             <div className="space-y-3">
               {textsLoading ? (
-                <p className="text-sm text-muted-foreground">Завантаження текстів...</p>
+                <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
               ) : texts.map((text) => (
-                <button
-                  key={text.id}
-                  onClick={() => startGame(text)}
+                <button key={text.id} onClick={() => startGame(text)}
                   className="w-full text-left p-4 rounded-xl border border-border bg-card/50 hover:border-primary/50 hover:bg-primary/5 transition-all group"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-semibold group-hover:text-primary transition-colors">{text.title}</h4>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {text.content.split(/\s+/).length} слів · {text.questions.length} питань
+                        {text.content.split(/\s+/).length} {t('syntagm.wordUnit', { count: text.content.split(/\s+/).length })} · {text.questions.length}
                       </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      text.difficulty === 'easy' ? 'bg-success/20 text-success' :
-                      text.difficulty === 'medium' ? 'bg-accent/20 text-accent' :
-                      'bg-destructive/20 text-destructive'
-                    }`}>
-                      {text.difficulty === 'easy' ? 'Легко' : text.difficulty === 'medium' ? 'Середньо' : 'Складно'}
+                    <span className={`text-xs px-2 py-1 rounded-full ${text.difficulty === 'easy' ? 'bg-success/20 text-success' : text.difficulty === 'medium' ? 'bg-accent/20 text-accent' : 'bg-destructive/20 text-destructive'}`}>
+                      {text.difficulty === 'easy' ? t('syntagm.difficultyEasy') : text.difficulty === 'medium' ? t('syntagm.difficultyMedium') : t('syntagm.difficultyHard')}
                     </span>
                   </div>
                 </button>

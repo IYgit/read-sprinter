@@ -5,6 +5,7 @@ import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
 import { wordPairsApi } from '@/lib/api';
 import { calcWordPairsScore } from '@/lib/scoring';
+import { useTranslation } from 'react-i18next';
 
 interface WordPair {
   word1: string;
@@ -44,6 +45,7 @@ function buildGrid(rows: number, cols: number, items: { w1: string; w2: string; 
 
 const WordPairsExercise = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [rows, setRows] = useState(4);
   const [cols, setCols] = useState(4);

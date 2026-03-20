@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getExerciseResults, type ExerciseResult } from '@/lib/exerciseStats';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
 interface ExerciseStatsChartProps {
   exerciseId: string;
@@ -10,6 +11,7 @@ interface ExerciseStatsChartProps {
 const ExerciseStatsChart = ({ exerciseId, title }: ExerciseStatsChartProps) => {
   const [results, setResults] = useState<ExerciseResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     getExerciseResults(exerciseId)
@@ -21,7 +23,7 @@ const ExerciseStatsChart = ({ exerciseId, title }: ExerciseStatsChartProps) => {
     return (
       <div className="glass-card p-6 mt-6">
         <h3 className="font-semibold mb-2 text-sm text-muted-foreground uppercase tracking-wider">{title}</h3>
-        <p className="text-sm text-muted-foreground">Завантаження статистики...</p>
+        <p className="text-sm text-muted-foreground">{t('stats.loading')}</p>
       </div>
     );
   }
@@ -31,7 +33,7 @@ const ExerciseStatsChart = ({ exerciseId, title }: ExerciseStatsChartProps) => {
       <div className="glass-card p-6 mt-6">
         <h3 className="font-semibold mb-2 text-sm text-muted-foreground uppercase tracking-wider">{title}</h3>
         <p className="text-sm text-muted-foreground">
-          Потрібно мінімум 2 результати для побудови графіка. Пройдено: {results.length}/2
+          {t('stats.minResults', { current: results.length })}
         </p>
       </div>
     );
@@ -71,8 +73,8 @@ const ExerciseStatsChart = ({ exerciseId, title }: ExerciseStatsChartProps) => {
                 borderRadius: '8px',
                 fontSize: '14px',
               }}
-              labelFormatter={(v) => `Спроба ${v}`}
-              formatter={(value: number) => [`${value} балів`, 'Результат']}
+              labelFormatter={(v) => t('stats.attempt', { n: v })}
+              formatter={(value: number) => [t('stats.points', { value }), t('stats.resultLabel')]}
             />
             <Line 
               type="monotone" 
@@ -89,15 +91,15 @@ const ExerciseStatsChart = ({ exerciseId, title }: ExerciseStatsChartProps) => {
       <div className="grid grid-cols-3 gap-3 mt-4 text-center">
         <div>
           <p className="text-lg font-bold text-foreground">{results.length}</p>
-          <p className="text-xs text-muted-foreground">Пройдено вправ</p>
+          <p className="text-xs text-muted-foreground">{t('stats.totalRuns')}</p>
         </div>
         <div>
           <p className="text-lg font-bold text-primary">{maxScore}</p>
-          <p className="text-xs text-muted-foreground">Максимальний бал</p>
+          <p className="text-xs text-muted-foreground">{t('stats.maxScore')}</p>
         </div>
         <div>
           <p className="text-lg font-bold text-accent">{avgScore}</p>
-          <p className="text-xs text-muted-foreground">Середній бал</p>
+          <p className="text-xs text-muted-foreground">{t('stats.avgScore')}</p>
         </div>
       </div>
     </div>

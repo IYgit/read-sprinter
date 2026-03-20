@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { LogOut, Zap, WifiOff, UserX, Timer } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import { calcWordPairsScore } from '@/lib/scoring';
 
@@ -49,17 +50,11 @@ function formatTime(ms: number): string {
 }
 
 const DuelWordPairsGame = ({
-  matchInfo,
-  opponentProgress,
-  opponentFinished,
-  opponentDurationMs,
-  opponentDisconnected,
-  opponentLeft,
-  onProgress,
-  onFinish,
-  onLeave,
+  matchInfo, opponentProgress, opponentFinished, opponentDurationMs,
+  opponentDisconnected, opponentLeft, onProgress, onFinish, onLeave,
 }: DuelWordPairsGameProps) => {
   const { pairs, wpRows, wpCols, wpTimeLimit, wpFontSize, totalCells, opponentName } = matchInfo;
+  const { t } = useTranslation();
 
   const [grid, setGrid] = useState<CellState[]>(() =>
     pairs.map((p) => ({ pair: p, selected: false, revealed: false }))
@@ -161,7 +156,7 @@ const DuelWordPairsGame = ({
   const myPct = totalCells > 0 ? (correctCount / totalCells) * 100 : 0;
 
   const opponentStatusText = opponentFinished
-    ? `✅ Фінішував! ${opponentDurationMs != null ? formatTime(opponentDurationMs) : ''}`.trim()
+    ? t('duel.opponentFinished', { time: opponentDurationMs != null ? formatTime(opponentDurationMs) : '' }).trim()
     : `${opponentProgress}/${totalCells}`;
 
   const getCellClass = (cell: CellState) => {
@@ -183,26 +178,21 @@ const DuelWordPairsGame = ({
 
   return (
     <div className="animate-fade-in-up">
-
       {opponentDisconnected && (
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm mb-4">
-          <WifiOff size={15} />
-          Суперник відключився від мережі
+          <WifiOff size={15} /> {t('duel.opponentDisconnected')}
         </div>
       )}
       {opponentLeft && (
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm mb-4">
-          <UserX size={15} />
-          Суперник покинув дуель
+          <UserX size={15} /> {t('duel.opponentLeft')}
         </div>
       )}
 
       {/* Opponent progress */}
       <div className="glass-card p-4 mb-4">
         <div className="flex items-center justify-between mb-2 text-sm">
-          <span className="text-muted-foreground">
-            ⚔️ <span className="text-foreground font-medium">{opponentName}</span>
-          </span>
+          <span className="text-muted-foreground">⚔️ <span className="text-foreground font-medium">{opponentName}</span></span>
           <span className="text-muted-foreground">{opponentStatusText}</span>
         </div>
         <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -216,19 +206,14 @@ const DuelWordPairsGame = ({
       {/* Game header */}
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm text-muted-foreground">
-          Оберіть клітинки, де слова <span className="text-primary font-semibold">різні</span>
+          {t('wordPairs.instruction')} <span className="text-primary font-semibold">{t('wordPairs.instructionHighlight')}</span>
         </p>
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <span>⏱ {formatTime(elapsed)}</span>
-          <div className={`flex items-center gap-1 px-3 py-1 rounded-full font-bold font-mono ${
-            timeLeft <= 10 ? 'bg-destructive/20 text-destructive' : 'bg-primary/10 text-primary'
-          }`}>
-            <Timer size={14} />
-            {timeLeft}с
+          <div className={`flex items-center gap-1 px-3 py-1 rounded-full font-bold font-mono ${timeLeft <= 10 ? 'bg-destructive/20 text-destructive' : 'bg-primary/10 text-primary'}`}>
+            <Timer size={14} /> {timeLeft}{t('wordPairs.timeUnit')}
           </div>
-          <span className={wrongCount > 0 ? 'text-destructive' : ''}>
-            Помилки: {wrongCount}
-          </span>
+          <span className={wrongCount > 0 ? 'text-destructive' : ''}>{t('schulte.errorsCount', { count: wrongCount })}</span>
         </div>
       </div>
 
@@ -264,7 +249,7 @@ const DuelWordPairsGame = ({
       {/* My progress */}
       <div className="glass-card p-4 mb-4">
         <div className="flex items-center justify-between mb-2 text-sm">
-          <span className="text-muted-foreground">Мій прогрес</span>
+          <span className="text-muted-foreground">{t('duel.myProgress')}</span>
           <span className="text-muted-foreground">{correctCount}/{totalCells}</span>
         </div>
         <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -281,23 +266,19 @@ const DuelWordPairsGame = ({
             onClick={onLeave}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-muted-foreground border border-border hover:border-destructive/40 hover:text-destructive transition-colors"
           >
-            <LogOut size={15} />
-            Покинути дуель
+            <LogOut size={15} /> {t('duel.leaveGame')}
           </button>
         </div>
       )}
 
       {finished && !opponentFinished && (
         <div className="text-center mt-2">
-          <p className="text-sm text-muted-foreground">
-            Ви завершили! Очікуємо результати суперника...
-          </p>
+          <p className="text-sm text-muted-foreground">{t('duel.waitingForOpponent')}</p>
           <button
             onClick={onLeave}
             className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-muted-foreground border border-border hover:text-foreground transition-colors"
           >
-            <Zap size={15} />
-            Не чекати (покинути дуель)
+            <Zap size={15} /> {t('duel.noWait')}
           </button>
         </div>
       )}

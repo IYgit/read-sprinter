@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { register, loginUser } from '@/lib/auth';
 import { LogIn, UserPlus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isRegister, setIsRegister] = useState(false);
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
@@ -33,36 +35,34 @@ const AuthPage = () => {
       <div className="relative glass-card w-full max-w-md p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gradient mb-2">
-            {isRegister ? 'Реєстрація' : 'Вхід'}
+            {isRegister ? t('auth.register') : t('auth.login')}
           </h1>
           <p className="text-muted-foreground text-sm">
-            {isRegister
-              ? 'Створіть акаунт для тренувань'
-              : 'Увійдіть, щоб продовжити тренування'}
+            {isRegister ? t('auth.createAccount') : t('auth.continueTraining')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1.5 text-foreground">Логін</label>
+            <label className="block text-sm font-medium mb-1.5 text-foreground">{t('auth.loginLabel')}</label>
             <input
               type="text"
               value={login}
               onChange={e => setLogin(e.target.value)}
               className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Введіть логін"
+              placeholder={t('auth.loginPlaceholder')}
               maxLength={50}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1.5 text-foreground">Пароль</label>
+            <label className="block text-sm font-medium mb-1.5 text-foreground">{t('auth.passwordLabel')}</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Введіть пароль"
+              placeholder={t('auth.passwordPlaceholder')}
               maxLength={100}
             />
           </div>
@@ -78,7 +78,7 @@ const AuthPage = () => {
             className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
           >
             {isRegister ? <UserPlus size={18} /> : <LogIn size={18} />}
-            {isRegister ? 'Зареєструватися' : 'Увійти'}
+            {isRegister ? t('auth.registerBtn') : t('auth.loginBtn')}
           </button>
         </form>
 
@@ -87,7 +87,7 @@ const AuthPage = () => {
             onClick={() => { setIsRegister(!isRegister); setError(''); }}
             className="text-sm text-primary hover:underline"
           >
-            {isRegister ? 'Вже є акаунт? Увійти' : 'Немає акаунту? Зареєструватися'}
+            {isRegister ? t('auth.haveAccount') : t('auth.noAccount')}
           </button>
         </div>
       </div>

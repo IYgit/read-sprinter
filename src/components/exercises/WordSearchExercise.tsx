@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, Play, Trophy, RotateCcw, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
 import { Slider } from '@/components/ui/slider';
@@ -66,6 +67,7 @@ const FONT_SIZE_OPTIONS = [
 
 const WordSearchExercise = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Word bank loaded from API (replaces hardcoded WORD_BANK)
   const [wordBank, setWordBank] = useState<string[]>([]);
@@ -154,16 +156,16 @@ const WordSearchExercise = () => {
     return (
       <div className="max-w-2xl mx-auto p-4 lg:p-6">
         <button onClick={() => navigate('/')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6">
-          <ArrowLeft size={20} /> До вибору вправ
+          <ArrowLeft size={20} /> {t('common.back')}
         </button>
         <div className="glass-card p-8">
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <Search size={32} className="text-primary" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Пошук слів</h2>
+            <h2 className="text-2xl font-bold mb-2">{t('wordSearch.title')}</h2>
             <p className="text-muted-foreground">
-              Знайдіть задані слова серед рядків букв. Виділяйте слова протягуванням по буквах.
+              {t('wordSearch.subtitle')}
             </p>
           </div>
 
@@ -171,11 +173,11 @@ const WordSearchExercise = () => {
           <div className="space-y-6 mb-8">
             <div>
               <label className="block text-sm font-medium mb-3">
-                Розмір сітки: {gridRows} × {gridCols}
+                {t('wordSearch.gridSize', { rows: gridRows, cols: gridCols })}
               </label>
               <div className="space-y-4">
                 <div>
-                  <span className="text-xs text-muted-foreground">Рядків: {gridRows}</span>
+                  <span className="text-xs text-muted-foreground">{t('wordSearch.gridRows', { n: gridRows })}</span>
                   <Slider
                     value={[gridRows]}
                     onValueChange={([v]) => setGridRows(v)}
@@ -186,7 +188,7 @@ const WordSearchExercise = () => {
                   />
                 </div>
                 <div>
-                  <span className="text-xs text-muted-foreground">Стовпців: {gridCols}</span>
+                  <span className="text-xs text-muted-foreground">{t('wordSearch.gridCols', { n: gridCols })}</span>
                   <Slider
                     value={[gridCols]}
                     onValueChange={([v]) => setGridCols(v)}
@@ -201,7 +203,7 @@ const WordSearchExercise = () => {
 
             <div>
               <label className="block text-sm font-medium mb-3">
-                Кількість слів для пошуку: {wordCount}
+                {t('wordSearch.wordsForSearch')} {wordCount}
               </label>
               <Slider
                 value={[wordCount]}
@@ -214,7 +216,7 @@ const WordSearchExercise = () => {
 
             <div>
               <label className="block text-sm font-medium mb-3">
-                Розмір шрифта
+                {t('common.fontSize')}
               </label>
               <div className="flex gap-2">
                 {FONT_SIZE_OPTIONS.map(opt => (
@@ -240,7 +242,7 @@ const WordSearchExercise = () => {
             className="btn-primary w-full flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Play size={22} />
-            {wordBankLoading ? 'Завантаження...' : 'Почати'}
+            {wordBankLoading ? t('common.loading') : t('common.start')}
           </button>
         </div>
       </div>
@@ -251,36 +253,36 @@ const WordSearchExercise = () => {
     return (
       <div className="max-w-2xl mx-auto p-4 lg:p-6">
         <button onClick={() => navigate('/')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6">
-          <ArrowLeft size={20} /> До вибору вправ
+          <ArrowLeft size={20} /> {t('common.back')}
         </button>
         <div className="glass-card p-8 text-center">
           <Trophy size={48} className="text-accent mx-auto mb-4" />
-          <h2 className="text-3xl font-bold mb-2">Результати</h2>
-          <p className="text-muted-foreground mb-8">Вправа «Пошук слів» завершена</p>
+          <h2 className="text-3xl font-bold mb-2">{t('common.results')}</h2>
+          <p className="text-muted-foreground mb-8">{t('wordSearch.resultTitle')}</p>
 
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="glass-card p-4">
               <p className="text-2xl font-bold text-primary">{score}</p>
-              <p className="text-xs text-muted-foreground">Балів</p>
+              <p className="text-xs text-muted-foreground">{t('common.score')}</p>
             </div>
             <div className="glass-card p-4">
               <p className="text-2xl font-bold text-accent">{foundWords.size}/{gridData?.wordsToFind.length || wordCount}</p>
-              <p className="text-xs text-muted-foreground">Знайдено</p>
+              <p className="text-xs text-muted-foreground">{t('wordSearch.found', { found: foundWords.size, total: gridData?.wordsToFind.length || wordCount })}</p>
             </div>
             <div className="glass-card p-4">
-              <p className="text-2xl font-bold text-foreground">{timeElapsed}с</p>
-              <p className="text-xs text-muted-foreground">Час</p>
+              <p className="text-2xl font-bold text-foreground">{timeElapsed}{t('common.seconds')}</p>
+              <p className="text-xs text-muted-foreground">{t('common.time')}</p>
             </div>
           </div>
 
-          <ExerciseStatsChart exerciseId="word-search" title="Статистика — Пошук слів" />
+          <ExerciseStatsChart exerciseId="word-search" title={t('wordSearch.history')} />
 
           <div className="flex gap-4 justify-center mt-6">
             <button onClick={startGame} className="btn-primary flex items-center gap-2">
-              <RotateCcw size={18} /> Ще раз
+              <RotateCcw size={18} /> {t('common.restart')}
             </button>
             <button onClick={() => navigate('/')} className="px-6 py-3 rounded-xl border border-border hover:bg-secondary/50 transition-colors">
-              До вправ
+              {t('common.toExercises')}
             </button>
           </div>
         </div>
@@ -296,14 +298,14 @@ const WordSearchExercise = () => {
           onClick={() => finishGame(calcWordSearchScore(foundWords.size, timeElapsed))}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft size={20} /> Завершити
+          <ArrowLeft size={20} /> {t('common.finish')}
         </button>
-        <span className="text-sm font-mono text-muted-foreground">{timeElapsed}с</span>
+        <span className="text-sm font-mono text-muted-foreground">{timeElapsed}{t('common.seconds')}</span>
       </div>
 
       {/* Words to find */}
       <div className="glass-card p-4 mb-4">
-        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">Знайдіть:</p>
+        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">{t('wordSearch.wordsToFind')}</p>
         <div className="flex gap-3 flex-wrap">
           {gridData?.wordsToFind.map(word => (
             <span

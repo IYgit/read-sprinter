@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { LogOut, Zap, WifiOff, UserX } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import { calcNumbersScore } from '@/lib/scoring';
 
@@ -49,6 +50,7 @@ const DuelNumbersGame = ({
   onLeave,
 }: DuelNumbersGameProps) => {
   const { numbers, displayTime, totalRounds, totalCells, opponentName } = matchInfo;
+  const { t } = useTranslation();
 
   const [round, setRound] = useState(0);           // current round index (0-based)
   const [roundPhase, setRoundPhase] = useState<RoundPhase>('showing');
@@ -139,7 +141,7 @@ const DuelNumbersGame = ({
   let opponentStatusText = `${opponentProgress}/${totalCells}`;
   if (opponentFinished) {
     const timeStr = opponentDurationMs != null ? formatTime(opponentDurationMs) : '';
-    opponentStatusText = `✅ Фінішував! ${timeStr}`.trim();
+    opponentStatusText = t('duel.opponentFinished', { time: timeStr }).trim();
   }
 
   let borderClass = 'border-border bg-card/30';
@@ -149,26 +151,25 @@ const DuelNumbersGame = ({
 
   const renderDisplayContent = () => (
     <div className={`min-h-[100px] flex items-center justify-center rounded-2xl border-2 border-dashed mb-6 transition-all duration-200 ${borderClass}`}>
-      {finished && <span className="text-2xl font-bold text-success">✓ Завершено!</span>}
+      {finished && <span className="text-2xl font-bold text-success">{t('duel.finishedBanner')}</span>}
       {!finished && roundPhase === 'showing' && (
         <span className="font-mono font-bold text-primary tracking-widest text-5xl animate-fade-in-up">
           {currentNumber}
         </span>
       )}
       {!finished && roundPhase !== 'showing' && feedback === 'correct' && (
-        <span className="text-2xl font-bold text-success">✓ Правильно!</span>
+        <span className="text-2xl font-bold text-success">{t('numbers.correctFeedback')}</span>
       )}
       {!finished && roundPhase !== 'showing' && feedback === 'incorrect' && (
         <div className="text-center">
-          <span className="text-xl font-bold text-destructive block">✗ Неправильно</span>
+          <span className="text-xl font-bold text-destructive block">{t('numbers.incorrectFeedback')}</span>
           <span className="text-muted-foreground text-sm mt-1 block">
-            Правильна відповідь:{' '}
-            <span className="font-mono font-bold text-foreground">{currentNumber}</span>
+            {t('numbers.correctAnswer')} <span className="font-mono font-bold text-foreground">{currentNumber}</span>
           </span>
         </div>
       )}
       {!finished && roundPhase === 'input' && feedback == null && (
-        <span className="text-muted-foreground text-lg">Введіть число...</span>
+        <span className="text-muted-foreground text-lg">{t('numbers.enterNumber')}</span>
       )}
     </div>
   );
@@ -178,14 +179,12 @@ const DuelNumbersGame = ({
 
       {opponentDisconnected && (
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm mb-4">
-          <WifiOff size={15} />
-          Суперник відключився від мережі
+          <WifiOff size={15} /> {t('duel.opponentDisconnected')}
         </div>
       )}
       {opponentLeft && (
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm mb-4">
-          <UserX size={15} />
-          Суперник покинув дуель
+          <UserX size={15} /> {t('duel.opponentLeft')}
         </div>
       )}
 
@@ -208,11 +207,11 @@ const DuelNumbersGame = ({
       {/* Game header */}
       <div className="flex items-center justify-between mb-4">
         <div className="text-sm text-muted-foreground">
-          Раунд <span className="text-primary font-bold text-lg">{round + 1}</span> / {totalRounds}
+          {t('numbers.round', { current: round + 1, total: totalRounds })}
         </div>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span>⏱ {formatTime(elapsed)}</span>
-          <span className={errors > 0 ? 'text-destructive' : ''}>Помилки: {errors}</span>
+          <span className={errors > 0 ? 'text-destructive' : ''}>{t('schulte.errorsCount', { count: errors })}</span>
         </div>
       </div>
 
@@ -240,7 +239,7 @@ const DuelNumbersGame = ({
               onChange={(e) => setUserInput(e.target.value.replaceAll(/\D/g, ''))}
               onKeyDown={handleKeyDown}
               disabled={roundPhase !== 'input'}
-              placeholder="Введіть число"
+              placeholder={t('numbers.enterNumber')}
               className="flex-1 px-6 py-4 rounded-xl bg-muted/50 border border-border text-center font-mono text-2xl tracking-widest focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-40"
             />
             <button
@@ -253,17 +252,13 @@ const DuelNumbersGame = ({
           </div>
         )}
 
-        {!finished && (
-          <p className="text-center text-xs text-muted-foreground mt-3">
-            Натисніть <span className="text-primary font-medium">Enter</span> для підтвердження
-          </p>
-        )}
+        
       </div>
 
       {/* My progress */}
       <div className="glass-card p-4 mb-4">
         <div className="flex items-center justify-between mb-2 text-sm">
-          <span className="text-muted-foreground">Мій прогрес</span>
+          <span className="text-muted-foreground">{t('duel.myProgress')}</span>
           <span className="text-muted-foreground">{myDisplayedProgress}/{totalCells}</span>
         </div>
         <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -280,23 +275,19 @@ const DuelNumbersGame = ({
             onClick={onLeave}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-muted-foreground border border-border hover:border-destructive/40 hover:text-destructive transition-colors"
           >
-            <LogOut size={15} />
-            Покинути дуель
+            <LogOut size={15} /> {t('duel.leaveGame')}
           </button>
         </div>
       )}
 
       {finished && !opponentFinished && (
         <div className="text-center mt-2">
-          <p className="text-sm text-muted-foreground">
-            Ви завершили! Очікуємо результати суперника...
-          </p>
+          <p className="text-sm text-muted-foreground">{t('duel.waitingForOpponent')}</p>
           <button
             onClick={onLeave}
             className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-muted-foreground border border-border hover:text-foreground transition-colors"
           >
-            <Zap size={15} />
-            Не чекати (покинути дуель)
+            <Zap size={15} /> {t('duel.noWait')}
           </button>
         </div>
       )}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Grid3X3, Hash, Swords, BookOpen, Eye, Search } from 'lucide-react';
 
 type ExerciseType = 'schulte-table' | 'numbers' | 'word-pairs' | 'rsvp' | 'word-search' | 'syntagm-reading' | 'letter-search';
@@ -6,78 +7,39 @@ interface DuelExerciseSelectorProps {
   onSelect: (exerciseType: ExerciseType) => void;
 }
 
-const exercises = [
-  {
-    id: 'schulte-table' as ExerciseType,
-    icon: Grid3X3,
-    title: 'Таблиця Шульте',
-    description: 'Знаходьте числа від 1 до N у випадковому порядку якомога швидше.',
-    badge: 'Увага · Швидкість',
-  },
-  {
-    id: 'numbers' as ExerciseType,
-    icon: Hash,
-    title: 'Числа',
-    description: 'Запам\'ятайте число, що з\'являється на короткий час, і введіть його.',
-    badge: 'Пам\'ять · Концентрація',
-  },
-  {
-    id: 'word-pairs' as ExerciseType,
-    icon: BookOpen,
-    title: 'Словопари',
-    description: 'Знайдіть клітинки, де слова відрізняються, якомога швидше.',
-    badge: 'Увага · Розрізнення',
-  },
-  {
-    id: 'rsvp' as ExerciseType,
-    icon: Eye,
-    title: 'RSVP',
-    description: 'Читайте текст за синтагмами — хто краще зрозумів, той і переміг.',
-    badge: 'Читання · Розуміння',
-  },
-  {
-    id: 'word-search' as ExerciseType,
-    icon: Search,
-    title: 'Пошук слів',
-    description: 'Знайдіть приховані слова у сітці з букв якомога швидше.',
-    badge: 'Увага · Пошук',
-  },
-  {
-    id: 'syntagm-reading' as ExerciseType,
-    icon: BookOpen,
-    title: 'Читання синтагмами',
-    description: 'Весь текст на екрані — слідкуйте за підсвіченою синтагмою і дайте відповіді.',
-    badge: 'Читання · Розуміння',
-  },
-  {
-    id: 'letter-search' as ExerciseType,
-    icon: Search,
-    title: 'Пошук букв',
-    description: 'Знайдіть усі задані букви в таблиці швидше за суперника.',
-    badge: 'Увага · Швидкість',
-  },
+const exerciseIds: ExerciseType[] = [
+  'schulte-table', 'numbers', 'word-pairs', 'rsvp', 'word-search', 'syntagm-reading', 'letter-search',
 ];
 
+const exerciseIcons: Record<ExerciseType, typeof Grid3X3> = {
+  'schulte-table': Grid3X3,
+  'numbers': Hash,
+  'word-pairs': BookOpen,
+  'rsvp': Eye,
+  'word-search': Search,
+  'syntagm-reading': BookOpen,
+  'letter-search': Search,
+};
+
 const DuelExerciseSelector = ({ onSelect }: DuelExerciseSelectorProps) => {
+  const { t } = useTranslation();
   return (
     <div className="glass-card p-8 animate-fade-in-up">
       <div className="text-center mb-8">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
           <Swords size={32} className="text-primary" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">Дуель</h2>
-        <p className="text-sm text-muted-foreground">
-          Оберіть вправу для змагання з суперником
-        </p>
+        <h2 className="text-2xl font-bold mb-2">{t('duel.title')}</h2>
+        <p className="text-sm text-muted-foreground">{t('duel.selectExerciseSubtitle')}</p>
       </div>
 
       <div className="space-y-4">
-        {exercises.map((ex) => {
-          const Icon = ex.icon;
+        {exerciseIds.map((id) => {
+          const Icon = exerciseIcons[id];
           return (
             <button
-              key={ex.id}
-              onClick={() => onSelect(ex.id)}
+              key={id}
+              onClick={() => onSelect(id)}
               className="w-full text-left p-5 rounded-xl border border-border bg-card hover:border-primary/50 hover:bg-primary/5 transition-all group"
             >
               <div className="flex items-start gap-4">
@@ -86,12 +48,12 @@ const DuelExerciseSelector = ({ onSelect }: DuelExerciseSelectorProps) => {
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-foreground">{ex.title}</h3>
+                    <h3 className="font-semibold text-foreground">{t(`duel.exercises.${id}.title`)}</h3>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent-foreground shrink-0">
-                      {ex.badge}
+                      {t(`duel.badges.${id}`)}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{ex.description}</p>
+                  <p className="text-sm text-muted-foreground">{t(`duel.exercises.${id}.description`)}</p>
                 </div>
               </div>
             </button>
@@ -103,4 +65,3 @@ const DuelExerciseSelector = ({ onSelect }: DuelExerciseSelectorProps) => {
 };
 
 export default DuelExerciseSelector;
-

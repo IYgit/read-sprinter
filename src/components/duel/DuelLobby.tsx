@@ -1,5 +1,6 @@
 ﻿import { useState } from 'react';
 import { Swords, Grid3X3 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { type JoinQueueRequest } from '@/lib/api';
 
 interface DuelLobbyProps {
@@ -17,6 +18,7 @@ const FONT_SIZE_OPTIONS = [
 const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
   const [gridSize, setGridSize] = useState(5);
   const [fontSize, setFontSize] = useState(20);
+  const { t } = useTranslation();
 
   const handleSearch = () => {
     onStartSearch({
@@ -32,16 +34,16 @@ const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
           <Swords size={32} className="text-primary" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">Таблиця Шульте — Дуель</h2>
+        <h2 className="text-2xl font-bold mb-2">{t('schulte.titleDuel')}</h2>
         <p className="text-sm text-muted-foreground">
-          Змагайтесь з іншим гравцем у Таблиці Шульте в реальному часі
+          {t('schulte.subtitleDuel')}
         </p>
       </div>
 
       <div className="space-y-6 mb-8">
         <div>
           <p className="text-sm font-medium text-muted-foreground mb-3">
-            Розмір таблиці: {gridSize}×{gridSize} ({gridSize * gridSize} чисел)
+            {t('schulte.gridSize', { size: gridSize, total: gridSize * gridSize })}
           </p>
           <div className="flex gap-2">
             {[3, 4, 5, 6, 7].map(s => (
@@ -62,7 +64,7 @@ const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
 
         <div>
           <p className="text-sm font-medium text-muted-foreground mb-3">
-            Розмір шрифта
+            {t('common.fontSize')}
           </p>
           <div className="flex gap-2">
             {FONT_SIZE_OPTIONS.map(opt => (
@@ -81,11 +83,13 @@ const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
           </div>
         </div>
 
-        <div className="glass-card p-4 text-sm text-muted-foreground">
+        <div className="glass-card p-4 text-sm text-muted-foreground space-y-1">
           <p className="flex items-center gap-2">
             <Grid3X3 size={16} className="text-primary shrink-0" />
-            Параметри узгоджуються із суперником: розмір — менший із двох, шрифт — більший.
+            {t('schulte.negotiation')}
           </p>
+          <p className="pl-6">• {t('schulte.negotiationSize')}</p>
+          <p className="pl-6">• {t('schulte.negotiationFont')}</p>
         </div>
       </div>
 
@@ -94,14 +98,13 @@ const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
           onClick={handleSearch}
           className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
         >
-          <Swords size={20} />
-          Знайти суперника
+          <Swords size={20} /> {t('duel.joinQueue')}
         </button>
         <button
           onClick={onBack}
           className="w-full py-3 rounded-xl border border-border text-muted-foreground hover:text-foreground transition-colors text-sm"
         >
-          ← Назад до вибору вправи
+          {t('duel.back')}
         </button>
       </div>
     </div>

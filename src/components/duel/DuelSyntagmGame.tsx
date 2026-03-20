@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { LogOut, WifiOff, UserX, BookOpen } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import { calcSyntagmScore } from '@/lib/scoring';
 
@@ -55,6 +56,7 @@ const DuelSyntagmGame = ({
     questions,
     totalCells,
   } = matchInfo;
+  const { t } = useTranslation();
 
   // Split into words and chunk boundaries
   const words = useMemo(() => textContent.split(/\s+/).filter(Boolean), [textContent]);
@@ -137,12 +139,14 @@ const DuelSyntagmGame = ({
   const currentChunk = chunks[currentChunkIndex];
 
   const opponentStatusText = () => {
-    if (opponentDisconnected) return '🔴 Відключився';
-    if (opponentLeft)         return '🚪 Покинув гру';
+    if (opponentDisconnected) return t('duel.opponentDisc');
+    if (opponentLeft)         return t('duel.opponentLeftGame');
     if (opponentFinished) {
-      return `✅ Завершив (${opponentDurationMs ? Math.round(opponentDurationMs / 1000) + 'с' : '?'})`;
+      return t('duel.opponentFinished', {
+        time: opponentDurationMs ? `${Math.round(opponentDurationMs / 1000)}${t('common.seconds')}` : '?',
+      });
     }
-    return `${opponentProgress}/${totalCells} відповідей`;
+    return t('duel.answersOf', { answered: opponentProgress, total: totalCells });
   };
 
   // ── Reading phase UI ───────────────────────────────────────────────────────
@@ -153,25 +157,27 @@ const DuelSyntagmGame = ({
         <div className="glass-card p-4 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">{textTitle}</p>
-            <p className="text-xs text-muted-foreground">{syntagmWidth} сл. · {displayTime} мс</p>
+            <p className="text-xs text-muted-foreground">
+              {syntagmWidth} {t('syntagm.wordUnit', { count: syntagmWidth })} · {displayTime} {t('common.ms')}
+            </p>
           </div>
           <button
             onClick={onLeave}
             className="flex items-center gap-1 text-sm text-muted-foreground hover:text-destructive transition-colors"
           >
-            <LogOut size={16} /> Вийти
+            <LogOut size={16} /> {t('duel.leaveGame')}
           </button>
         </div>
 
         {/* Opponent status */}
         <div className="glass-card p-3 flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Суперник ({opponentName}):</span>
+          <span className="text-muted-foreground">{t('duel.opponentWithName', { name: opponentName })}</span>
           <span className="font-medium">
             {opponentDisconnected
-              ? <span className="flex items-center gap-1 text-destructive"><WifiOff size={14} /> Відключився</span>
+              ? <span className="flex items-center gap-1 text-destructive"><WifiOff size={14} /> {t('duel.disconnected')}</span>
               : opponentLeft
-                ? <span className="flex items-center gap-1 text-muted-foreground"><UserX size={14} /> Покинув гру</span>
-                : <span className="text-muted-foreground">📖 Читає...</span>
+                ? <span className="flex items-center gap-1 text-muted-foreground"><UserX size={14} /> {t('duel.opponentLeft')}</span>
+                : <span className="text-muted-foreground">{t('duel.opponentReading')}</span>
             }
           </span>
         </div>
@@ -209,7 +215,7 @@ const DuelSyntagmGame = ({
         </div>
 
         <p className="text-center text-sm text-muted-foreground">
-          Синтагма {Math.min(currentChunkIndex + 1, chunks.length)} з {chunks.length}
+          {t('duel.syntagmProgress', { current: Math.min(currentChunkIndex + 1, chunks.length), total: chunks.length })}
         </p>
       </div>
     );
@@ -226,13 +232,13 @@ const DuelSyntagmGame = ({
         <div className="flex items-center gap-2">
           <BookOpen size={18} className="text-primary" />
           <div>
-            <p className="text-sm font-medium">Питання по тексту</p>
+            <p className="text-sm font-medium">{t('duel.questionsAboutText')}</p>
             <p className="text-xs text-muted-foreground">{textTitle}</p>
           </div>
         </div>
         <div className="text-right">
           <p className="text-sm font-bold text-primary">{answeredCount}/{questions.length}</p>
-          <p className="text-xs text-muted-foreground">відповіді</p>
+          <p className="text-xs text-muted-foreground">{t('duel.answersCount')}</p>
         </div>
       </div>
 
@@ -246,7 +252,7 @@ const DuelSyntagmGame = ({
 
       {/* Opponent progress */}
       <div className="glass-card p-3 flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">Суперник ({opponentName}):</span>
+        <span className="text-muted-foreground">{t('duel.opponentWithName', { name: opponentName })}</span>
         <span className="font-medium">{opponentStatusText()}</span>
       </div>
       <div className="progress-bar">
@@ -291,7 +297,9 @@ const DuelSyntagmGame = ({
               </div>
               {answered && (
                 <p className={`text-xs mt-2 ${isCorrect ? 'text-green-500' : 'text-destructive'}`}>
-                  {isCorrect ? '✓ Правильно' : `✗ Правильна відповідь: ${q.options[q.correctIndex]}`}
+                  {isCorrect
+                    ? `✓ ${t('common.correct')}`
+                    : `✗ ${t('syntagm.correctAnswer')} ${q.options[q.correctIndex]}`}
                 </p>
               )}
             </div>
@@ -302,11 +310,11 @@ const DuelSyntagmGame = ({
       {/* Finish state */}
       {finished && (
         <div className="glass-card p-6 text-center border border-primary/30">
-          <p className="text-lg font-bold text-primary mb-1">✅ Завершено!</p>
+          <p className="text-lg font-bold text-primary mb-1">{t('duel.finishedBanner')}</p>
           <p className="text-sm text-muted-foreground">
-            Правильних відповідей: {correctCount}/{questions.length}
+            {t('duel.correctAnswersCount', { correct: correctCount, total: questions.length })}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">Очікуємо результати суперника...</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('duel.waitingForResults')}</p>
         </div>
       )}
 
@@ -315,8 +323,8 @@ const DuelSyntagmGame = ({
         <div className="glass-card p-4 border border-destructive/30 flex items-center gap-3">
           <WifiOff size={20} className="text-destructive shrink-0" />
           <div>
-            <p className="font-medium text-sm">Суперник відключився</p>
-            <p className="text-xs text-muted-foreground">Завершіть вправу, щоб отримати результат.</p>
+            <p className="font-medium text-sm">{t('duel.opponentDisconnected')}</p>
+            <p className="text-xs text-muted-foreground">{t('duel.finishForResult')}</p>
           </div>
         </div>
       )}
@@ -324,8 +332,8 @@ const DuelSyntagmGame = ({
         <div className="glass-card p-4 border border-muted flex items-center gap-3">
           <UserX size={20} className="text-muted-foreground shrink-0" />
           <div>
-            <p className="font-medium text-sm">Суперник покинув гру</p>
-            <p className="text-xs text-muted-foreground">Завершіть вправу, щоб отримати результат.</p>
+            <p className="font-medium text-sm">{t('duel.opponentLeft')}</p>
+            <p className="text-xs text-muted-foreground">{t('duel.finishForResult')}</p>
           </div>
         </div>
       )}

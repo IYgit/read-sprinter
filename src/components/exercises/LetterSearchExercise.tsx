@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, Play, Trophy, RotateCcw, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import { calcLetterSearchScore } from '@/lib/scoring';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
@@ -77,6 +78,7 @@ const FONT_SIZE_OPTIONS = [
 
 const LetterSearchExercise = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [phase, setPhase] = useState<'settings' | 'playing' | 'results'>('settings');
     const [gridSizeIdx, setGridSizeIdx] = useState(1);
     const [letterCount, setLetterCount] = useState(2);
@@ -159,80 +161,50 @@ const LetterSearchExercise = () => {
         return (
             <div className="max-w-2xl mx-auto p-4 lg:p-6">
                 <button onClick={() => navigate('/')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6">
-                    <ArrowLeft size={20} /> До вибору вправ
+                    <ArrowLeft size={20} /> {t('common.back')}
                 </button>
                 <div className="glass-card p-8">
                     <div className="text-center mb-8">
                         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                             <Search size={32} className="text-primary" />
                         </div>
-                        <h2 className="text-2xl font-bold mb-2">Пошук букв</h2>
-                        <p className="text-muted-foreground">
-                            Швидко знайдіть усі задані букви серед таблиці довільних букв.
-                        </p>
+                        <h2 className="text-2xl font-bold mb-2">{t('letterSearch.title')}</h2>
+                        <p className="text-muted-foreground">{t('letterSearch.subtitle')}</p>
                     </div>
-
                     <div className="space-y-6 mb-8">
                         <div>
-                            <label className="text-sm font-medium text-muted-foreground mb-2 block">Розмір таблиці</label>
+                            <label className="text-sm font-medium text-muted-foreground mb-2 block">{t('letterSearch.gridSize')}</label>
                             <div className="flex gap-2 flex-wrap">
                                 {GRID_SIZE_OPTIONS.map((opt, i) => (
-                                    <button
-                                        key={opt.label}
-                                        onClick={() => setGridSizeIdx(i)}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                            gridSizeIdx === i
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
-                                        }`}
-                                    >
-                                        {opt.label}
-                                    </button>
+                                    <button key={opt.label} onClick={() => setGridSizeIdx(i)}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${gridSizeIdx === i ? 'bg-primary text-primary-foreground' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}
+                                    >{opt.label}</button>
                                 ))}
                             </div>
                         </div>
-
                         <div>
-                            <label className="text-sm font-medium text-muted-foreground mb-2 block">Кількість букв для пошуку</label>
+                            <label className="text-sm font-medium text-muted-foreground mb-2 block">{t('letterSearch.letterCount')}</label>
                             <div className="flex gap-2">
                                 {LETTER_COUNT_OPTIONS.map(n => (
-                                    <button
-                                        key={n}
-                                        onClick={() => setLetterCount(n)}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                            letterCount === n
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
-                                        }`}
-                                    >
-                                        {n}
-                                    </button>
+                                    <button key={n} onClick={() => setLetterCount(n)}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${letterCount === n ? 'bg-primary text-primary-foreground' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}
+                                    >{n}</button>
                                 ))}
                             </div>
                         </div>
-
                         <div>
-                            <label className="text-sm font-medium text-muted-foreground mb-2 block">Розмір шрифта</label>
+                            <label className="text-sm font-medium text-muted-foreground mb-2 block">{t('common.fontSize')}</label>
                             <div className="flex gap-2">
                                 {FONT_SIZE_OPTIONS.map(opt => (
-                                    <button
-                                        key={opt.value}
-                                        onClick={() => setFontSize(opt.value)}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                            fontSize === opt.value
-                                                ? 'bg-accent text-accent-foreground'
-                                                : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
-                                        }`}
-                                    >
-                                        {opt.label}
-                                    </button>
+                                    <button key={opt.value} onClick={() => setFontSize(opt.value)}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${fontSize === opt.value ? 'bg-accent text-accent-foreground' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}
+                                    >{opt.label}</button>
                                 ))}
                             </div>
                         </div>
                     </div>
-
                     <button onClick={startGame} className="btn-primary w-full flex items-center justify-center gap-2 text-lg">
-                        <Play size={22} /> Почати
+                        <Play size={22} /> {t('common.start')}
                     </button>
                 </div>
             </div>
@@ -243,44 +215,44 @@ const LetterSearchExercise = () => {
         return (
             <div className="max-w-2xl mx-auto p-4 lg:p-6">
                 <button onClick={() => navigate('/')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6">
-                    <ArrowLeft size={20} /> До вибору вправ
+                    <ArrowLeft size={20} /> {t('common.back')}
                 </button>
                 <div className="glass-card p-8 text-center">
                     <Trophy size={48} className="text-accent mx-auto mb-4" />
-                    <h2 className="text-3xl font-bold mb-2">Результати</h2>
-                    <p className="text-muted-foreground mb-8">Вправа «Пошук букв» завершена</p>
+                    <h2 className="text-3xl font-bold mb-2">{t('common.results')}</h2>
+                    <p className="text-muted-foreground mb-8">{t('letterSearch.resultTitle')}</p>
 
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
                         <div className="glass-card p-4">
                             <p className="text-2xl font-bold text-primary">{score}</p>
-                            <p className="text-xs text-muted-foreground">Балів</p>
+                            <p className="text-xs text-muted-foreground">{t('common.score')}</p>
                         </div>
                         <div className="glass-card p-4">
-                            <p className="text-2xl font-bold text-accent">{timeElapsed}с</p>
-                            <p className="text-xs text-muted-foreground">Час</p>
+                            <p className="text-2xl font-bold text-accent">{timeElapsed}{t('common.seconds')}</p>
+                            <p className="text-xs text-muted-foreground">{t('common.time')}</p>
                         </div>
                         <div className="glass-card p-4">
                             <p className="text-2xl font-bold text-destructive">{errors}</p>
-                            <p className="text-xs text-muted-foreground">Помилок</p>
+                            <p className="text-xs text-muted-foreground">{t('common.errors')}</p>
                         </div>
                         <div className="glass-card p-4">
                             <p className="text-2xl font-bold text-foreground">{gridSize.cols}×{gridSize.rows}</p>
-                            <p className="text-xs text-muted-foreground">Розмір</p>
+                            <p className="text-xs text-muted-foreground">{t('letterSearch.gridSizeLabel')}</p>
                         </div>
                         <div className="glass-card p-4">
                             <p className="text-2xl font-bold text-foreground">{letterCount}</p>
-                            <p className="text-xs text-muted-foreground">Букв</p>
+                            <p className="text-xs text-muted-foreground">{t('letterSearch.lettersForSearch')}</p>
                         </div>
                     </div>
 
-                    <ExerciseStatsChart exerciseId="letter-search" title="Статистика — Пошук букв" />
+                    <ExerciseStatsChart exerciseId="letter-search" title={t('letterSearch.history')} />
 
                     <div className="flex gap-4 justify-center mt-6">
                         <button onClick={startGame} className="btn-primary flex items-center gap-2">
-                            <RotateCcw size={18} /> Ще раз
+                            <RotateCcw size={18} /> {t('common.restart')}
                         </button>
                         <button onClick={() => navigate('/')} className="px-6 py-3 rounded-xl border border-border hover:bg-secondary/50 transition-colors">
-                            До вправ
+                            {t('common.toExercises')}
                         </button>
                     </div>
                 </div>
@@ -293,15 +265,14 @@ const LetterSearchExercise = () => {
         <div className="max-w-3xl mx-auto p-4 lg:p-6">
             <div className="flex items-center justify-between mb-4">
                 <button onClick={finishGame} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                    <ArrowLeft size={20} /> Завершити
+                    <ArrowLeft size={20} /> {t('common.finish')}
                 </button>
-                <span className="text-lg font-mono font-bold text-primary">{timeElapsed}с</span>
+                <span className="text-lg font-mono font-bold text-primary">{timeElapsed}{t('common.seconds')}</span>
             </div>
 
-            {/* Target letters & remaining */}
             <div className="glass-card p-4 mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">Знайти</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">{t('letterSearch.targets')}</span>
                     <div className="flex gap-2">
                         {targetLetters.map(l => (
                             <span key={l} className="px-3 py-1 rounded-lg bg-accent/20 text-accent font-bold text-lg">{l}</span>
@@ -309,47 +280,25 @@ const LetterSearchExercise = () => {
                     </div>
                 </div>
                 <div className="text-right">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">Залишилось </span>
-                    <span className="text-lg font-bold text-primary">{remaining}</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">{t('letterSearch.remaining', { n: remaining })}</span>
                 </div>
             </div>
 
-            {/* Progress bar */}
             <div className="w-full h-2 bg-secondary/50 rounded-full mb-4 overflow-hidden">
-                <div
-                    className="h-full bg-primary rounded-full transition-all duration-300"
-                    style={{ width: totalTargets > 0 ? `${(foundCount / totalTargets) * 100}%` : '0%' }}
-                />
+                <div className="h-full bg-primary rounded-full transition-all duration-300" style={{ width: totalTargets > 0 ? `${(foundCount / totalTargets) * 100}%` : '0%' }} />
             </div>
 
-            {/* Letter grid */}
             <div className="glass-card p-3 select-none">
-                <div
-                    className="grid gap-1"
-                    style={{ gridTemplateColumns: `repeat(${gridSize.cols}, 1fr)` }}
-                >
+                <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${gridSize.cols}, 1fr)` }}>
                     {grid.map((row, r) =>
                         row.map((cell, c) => (
-                            <div
-                                key={`${r}-${c}`}
-                                onClick={() => handleCellClick(r, c)}
-                                style={{ fontSize: `${fontSize}px` }}
-                                className={`aspect-square flex items-center justify-center font-bold rounded-md cursor-pointer transition-all select-none ${
-                                    cell.found
-                                        ? 'bg-accent/25 text-accent scale-90'
-                                        : 'hover:bg-muted/50 text-foreground/80 active:scale-95'
-                                }`}
-                            >
-                                {cell.letter}
-                            </div>
+                            <div key={`${r}-${c}`} onClick={() => handleCellClick(r, c)} style={{ fontSize: `${fontSize}px` }}
+                                className={`aspect-square flex items-center justify-center font-bold rounded-md cursor-pointer transition-all select-none ${cell.found ? 'bg-accent/25 text-accent scale-90' : 'hover:bg-muted/50 text-foreground/80 active:scale-95'}`}
+                            >{cell.letter}</div>
                         ))
                     )}
                 </div>
             </div>
-
-            <p className="text-center text-xs text-muted-foreground mt-3">
-                Натискайте на букви, які потрібно знайти
-            </p>
         </div>
     );
 };

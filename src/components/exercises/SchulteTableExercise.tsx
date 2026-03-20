@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
 import { calcSchulteScore } from '@/lib/scoring';
+import { useTranslation } from 'react-i18next';
 
 function shuffleArray<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -23,6 +24,7 @@ const FONT_SIZE_OPTIONS = [
 
 const SchulteTableExercise = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [gridSize, setGridSize] = useState(5);
   const [fontSize, setFontSize] = useState(20);
@@ -106,9 +108,9 @@ const SchulteTableExercise = () => {
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
           <button onClick={() => navigate('/')} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft size={16} />
-            На головну
+            {t('common.backHome')}
           </button>
-          <span className="text-sm font-medium text-primary">Таблиця Шульте</span>
+          <span className="text-sm font-medium text-primary">{t('schulte.title')}</span>
           <div className="w-20" />
         </div>
       </nav>
@@ -123,16 +125,14 @@ const SchulteTableExercise = () => {
                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <Grid3X3 size={32} className="text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold mb-2">Таблиця Шульте</h1>
-                <p className="text-sm text-muted-foreground">
-                  Знайдіть і натисніть всі числа по порядку якомога швидше.
-                </p>
+                <h1 className="text-2xl font-bold mb-2">{t('schulte.title')}</h1>
+                <p className="text-sm text-muted-foreground">{t('schulte.subtitle')}</p>
               </div>
 
               <div className="space-y-6">
                 <div>
                   <label className="text-sm font-medium text-muted-foreground block mb-3">
-                    Розмір таблиці: {gridSize}×{gridSize} ({totalCells} чисел)
+                    {t('schulte.gridSize', { size: gridSize, total: totalCells })}
                   </label>
                   <div className="flex gap-2">
                     {[3, 4, 5, 6, 7].map(s => (
@@ -153,7 +153,7 @@ const SchulteTableExercise = () => {
 
                 <div>
                   <label className="text-sm font-medium text-muted-foreground block mb-3">
-                    Розмір шрифта
+                    {t('common.fontSize')}
                   </label>
                   <div className="flex gap-2">
                     {FONT_SIZE_OPTIONS.map(opt => (
@@ -177,11 +177,10 @@ const SchulteTableExercise = () => {
                   className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                 >
                   <Play size={20} />
-                  Почати
+                  {t('common.start')}
                 </button>
               </div>
-
-              <ExerciseStatsChart exerciseId="schulte-table" title="Історія результатів" />
+              <ExerciseStatsChart exerciseId="schulte-table" title={t('schulte.history')} />
             </div>
           )}
 
@@ -190,11 +189,11 @@ const SchulteTableExercise = () => {
             <div className="animate-fade-in-up">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-sm text-muted-foreground">
-                  Знайдіть: <span className="text-2xl font-bold text-primary ml-1">{nextNumber}</span>
+                  {t('schulte.find')} <span className="text-2xl font-bold text-primary ml-1">{nextNumber}</span>
                 </div>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <span>⏱ {formatTime(elapsed)}</span>
-                  <span className={errors > 0 ? 'text-destructive' : ''}>Помилки: {errors}</span>
+                  <span className={errors > 0 ? 'text-destructive' : ''}>{t('schulte.errorsCount', { count: errors })}</span>
                 </div>
               </div>
 
@@ -237,43 +236,34 @@ const SchulteTableExercise = () => {
                 <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
                   <Trophy size={32} className="text-accent" />
                 </div>
-                <h2 className="text-2xl font-bold mb-2">Результати</h2>
-                <p className="text-4xl font-bold text-primary">{score} балів</p>
+                <h2 className="text-2xl font-bold mb-2">{t('common.results')}</h2>
+                <p className="text-4xl font-bold text-primary">{score} {t('common.score').toLowerCase()}</p>
               </div>
 
               <div className="grid grid-cols-3 gap-4 mb-8">
                 <div className="glass-card p-4 text-center">
                   <p className="text-2xl font-bold text-foreground">{formatTime(elapsed)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Час</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('common.time')}</p>
                 </div>
                 <div className="glass-card p-4 text-center">
                   <p className="text-2xl font-bold text-foreground">{errors}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Помилки</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('common.errors')}</p>
                 </div>
                 <div className="glass-card p-4 text-center">
                   <p className="text-2xl font-bold text-foreground">{gridSize}×{gridSize}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Розмір</p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('common.settings')}</p>
                 </div>
               </div>
 
               <div className="flex gap-3">
-                <button
-                  onClick={startGame}
-                  className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                >
-                  <RotateCcw size={18} />
-                  Ще раз
+                <button onClick={startGame} className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                  <RotateCcw size={18} />{t('common.restart')}
                 </button>
-                <button
-                  onClick={() => setPhase('settings')}
-                  className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Settings size={18} />
-                  Налаштування
+                <button onClick={() => setPhase('settings')} className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2">
+                  <Settings size={18} />{t('common.settings')}
                 </button>
               </div>
-
-              <ExerciseStatsChart exerciseId="schulte-table" title="Історія результатів" />
+              <ExerciseStatsChart exerciseId="schulte-table" title={t('schulte.history')} />
             </div>
           )}
         </div>

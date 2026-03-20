@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { LogOut, WifiOff, UserX, Eye } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import { calcRsvpScore } from '@/lib/scoring';
 
@@ -55,6 +56,7 @@ const DuelRsvpGame = ({
     rsvpQuestions,
     totalCells,
   } = matchInfo;
+  const { t } = useTranslation();
 
   // Split text into syntagm chunks
   const chunks = useMemo(() => {
@@ -143,10 +145,12 @@ const DuelRsvpGame = ({
 
   // Opponent status text
   const opponentStatusText = () => {
-    if (opponentDisconnected) return '🔴 Відключився';
-    if (opponentLeft)         return '🚪 Покинув гру';
-    if (opponentFinished)     return `✅ Завершив (${opponentDurationMs ? Math.round(opponentDurationMs / 1000) + 'с' : '?'})`;
-    return `${opponentProgress}/${totalCells} відповідей`;
+    if (opponentDisconnected) return t('duel.opponentDisc');
+    if (opponentLeft)         return t('duel.opponentLeftGame');
+    if (opponentFinished)     return t('duel.opponentFinished', {
+      time: opponentDurationMs ? `${Math.round(opponentDurationMs / 1000)}${t('common.seconds')}` : '?',
+    });
+    return t('duel.answersOf', { answered: opponentProgress, total: totalCells });
   };
 
   // ── Reading phase UI ───────────────────────────────────────────────────────
@@ -157,20 +161,24 @@ const DuelRsvpGame = ({
         <div className="glass-card p-4 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">{rsvpTextTitle}</p>
-            <p className="text-xs text-muted-foreground">{rsvpSyntagmWidth} сл. · {rsvpDisplayTime} мс</p>
+            <p className="text-xs text-muted-foreground">
+              {rsvpSyntagmWidth} {t('rsvp.wordUnit', { count: rsvpSyntagmWidth })} · {rsvpDisplayTime} {t('common.ms')}
+            </p>
           </div>
           <button onClick={onLeave} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-destructive transition-colors">
-            <LogOut size={16} /> Вийти
+            <LogOut size={16} /> {t('duel.leaveGame')}
           </button>
         </div>
 
         {/* Opponent status */}
         <div className="glass-card p-3 flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Суперник ({opponentName}):</span>
+          <span className="text-muted-foreground">{t('duel.opponentWithName', { name: opponentName })}</span>
           <span className="font-medium">
-            {opponentDisconnected ? <span className="flex items-center gap-1 text-destructive"><WifiOff size={14} /> Відключився</span>
-              : opponentLeft ? <span className="flex items-center gap-1 text-muted-foreground"><UserX size={14} /> Покинув гру</span>
-              : <span className="text-muted-foreground">📖 Читає...</span>}
+            {opponentDisconnected
+              ? <span className="flex items-center gap-1 text-destructive"><WifiOff size={14} /> {t('duel.disconnected')}</span>
+              : opponentLeft
+                ? <span className="flex items-center gap-1 text-muted-foreground"><UserX size={14} /> {t('duel.opponentLeft')}</span>
+                : <span className="text-muted-foreground">{t('duel.opponentReading')}</span>}
           </span>
         </div>
 
@@ -190,13 +198,13 @@ const DuelRsvpGame = ({
                 {chunks[currentChunkIndex]}
               </span>
             ) : (
-              <span className="text-muted-foreground text-lg">Читання завершено...</span>
+              <span className="text-muted-foreground text-lg">{t('rsvp.readingComplete')}</span>
             )}
           </div>
         </div>
 
         <p className="text-center text-sm text-muted-foreground">
-          Синтагма {Math.min(currentChunkIndex + 1, chunks.length)} з {chunks.length}
+          {t('duel.syntagmProgress', { current: Math.min(currentChunkIndex + 1, chunks.length), total: chunks.length })}
         </p>
       </div>
     );
@@ -213,13 +221,13 @@ const DuelRsvpGame = ({
         <div className="flex items-center gap-2">
           <Eye size={18} className="text-primary" />
           <div>
-            <p className="text-sm font-medium">Питання по тексту</p>
+            <p className="text-sm font-medium">{t('duel.questionsAboutText')}</p>
             <p className="text-xs text-muted-foreground">{rsvpTextTitle}</p>
           </div>
         </div>
         <div className="text-right">
           <p className="text-sm font-bold text-primary">{answeredCount}/{rsvpQuestions.length}</p>
-          <p className="text-xs text-muted-foreground">відповіді</p>
+          <p className="text-xs text-muted-foreground">{t('duel.answersCount')}</p>
         </div>
       </div>
 
@@ -233,7 +241,7 @@ const DuelRsvpGame = ({
 
       {/* Opponent progress */}
       <div className="glass-card p-3 flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">Суперник ({opponentName}):</span>
+        <span className="text-muted-foreground">{t('duel.opponentWithName', { name: opponentName })}</span>
         <span className="font-medium">{opponentStatusText()}</span>
       </div>
       <div className="progress-bar">
@@ -278,7 +286,9 @@ const DuelRsvpGame = ({
               </div>
               {answered && (
                 <p className={`text-xs mt-2 ${isCorrect ? 'text-green-500' : 'text-destructive'}`}>
-                  {isCorrect ? '✓ Правильно' : `✗ Правильна відповідь: ${q.options[q.correctIndex]}`}
+                  {isCorrect
+                    ? `✓ ${t('common.correct')}`
+                    : `✗ ${t('rsvp.correctAnswer')} ${q.options[q.correctIndex]}`}
                 </p>
               )}
             </div>
@@ -289,11 +299,11 @@ const DuelRsvpGame = ({
       {/* Finish state */}
       {finished && (
         <div className="glass-card p-6 text-center border border-primary/30">
-          <p className="text-lg font-bold text-primary mb-1">✅ Завершено!</p>
+          <p className="text-lg font-bold text-primary mb-1">{t('duel.finishedBanner')}</p>
           <p className="text-sm text-muted-foreground">
-            Правильних відповідей: {correctCount}/{rsvpQuestions.length}
+            {t('duel.correctAnswersCount', { correct: correctCount, total: rsvpQuestions.length })}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">Очікуємо результати суперника...</p>
+          <p className="text-xs text-muted-foreground mt-1">{t('duel.waitingForResults')}</p>
         </div>
       )}
 
@@ -302,8 +312,8 @@ const DuelRsvpGame = ({
         <div className="glass-card p-4 border border-destructive/30 flex items-center gap-3">
           <WifiOff size={20} className="text-destructive shrink-0" />
           <div>
-            <p className="font-medium text-sm">Суперник відключився</p>
-            <p className="text-xs text-muted-foreground">Завершіть вправу, щоб отримати результат.</p>
+            <p className="font-medium text-sm">{t('duel.opponentDisconnected')}</p>
+            <p className="text-xs text-muted-foreground">{t('duel.finishForResult')}</p>
           </div>
         </div>
       )}
@@ -311,8 +321,8 @@ const DuelRsvpGame = ({
         <div className="glass-card p-4 border border-muted flex items-center gap-3">
           <UserX size={20} className="text-muted-foreground shrink-0" />
           <div>
-            <p className="font-medium text-sm">Суперник покинув гру</p>
-            <p className="text-xs text-muted-foreground">Завершіть вправу, щоб отримати результат.</p>
+            <p className="font-medium text-sm">{t('duel.opponentLeft')}</p>
+            <p className="text-xs text-muted-foreground">{t('duel.finishForResult')}</p>
           </div>
         </div>
       )}
