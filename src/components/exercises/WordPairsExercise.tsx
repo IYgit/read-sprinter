@@ -300,7 +300,7 @@ const WordPairsExercise = () => {
   // Playing
   return (
     <div className="max-w-4xl mx-auto p-4 lg:p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <button onClick={finishGame} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft size={20} /> Завершити
         </button>
@@ -311,6 +311,39 @@ const WordPairsExercise = () => {
           <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full ${timeLeft <= 10 ? 'bg-destructive/20 text-destructive' : 'bg-primary/10 text-primary'}`}>
             <Timer size={16} />
             <span className="font-bold font-mono">{timeLeft}с</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress bars */}
+      <div className="space-y-2 mb-5">
+        {/* Time bar */}
+        <div>
+          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+            <span>Час</span>
+            <span>{timeLeft} / {timeLimit}с</span>
+          </div>
+          <div className="h-2 rounded-full bg-secondary overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-1000 ease-linear ${
+                timeLeft <= 10 ? 'bg-destructive' : timeLeft <= 20 ? 'bg-accent' : 'bg-primary'
+              }`}
+              style={{ width: `${(timeLeft / timeLimit) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Found pairs bar */}
+        <div>
+          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+            <span>Знайдено пар</span>
+            <span>{correctSelections} / {totalDifferent}</span>
+          </div>
+          <div className="h-2 rounded-full bg-secondary overflow-hidden">
+            <div
+              className="h-full rounded-full bg-success transition-all duration-300"
+              style={{ width: totalDifferent > 0 ? `${(correctSelections / totalDifferent) * 100}%` : '0%' }}
+            />
           </div>
         </div>
       </div>
