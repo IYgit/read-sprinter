@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, Play, Trophy, RotateCcw, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { saveExerciseResult } from '@/lib/exerciseStats';
+import { calcLetterSearchScore } from '@/lib/scoring';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
 
 const UKRAINIAN_LETTERS = 'абвгґдеєжзиіїйклмнопрстуфхцчшщьюя';
@@ -138,7 +139,13 @@ const LetterSearchExercise = () => {
     };
 
     const remaining = totalTargets - foundCount;
-    const score = Math.max(0, foundCount * 100 - errors * 25 + Math.max(0, (120 - timeElapsed)) * 2);
+    const score = calcLetterSearchScore(
+        foundCount,
+        errors,
+        timeElapsed,
+        gridSize.rows * gridSize.cols,
+        letterCount,
+    );
 
     useEffect(() => {
         if (phase === 'results') {
@@ -241,7 +248,7 @@ const LetterSearchExercise = () => {
                     <h2 className="text-3xl font-bold mb-2">Результати</h2>
                     <p className="text-muted-foreground mb-8">Вправа «Пошук букв» завершена</p>
 
-                    <div className="grid grid-cols-3 gap-4 mb-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
                         <div className="glass-card p-4">
                             <p className="text-2xl font-bold text-primary">{score}</p>
                             <p className="text-xs text-muted-foreground">Балів</p>
@@ -253,6 +260,14 @@ const LetterSearchExercise = () => {
                         <div className="glass-card p-4">
                             <p className="text-2xl font-bold text-destructive">{errors}</p>
                             <p className="text-xs text-muted-foreground">Помилок</p>
+                        </div>
+                        <div className="glass-card p-4">
+                            <p className="text-2xl font-bold text-foreground">{gridSize.cols}×{gridSize.rows}</p>
+                            <p className="text-xs text-muted-foreground">Розмір</p>
+                        </div>
+                        <div className="glass-card p-4">
+                            <p className="text-2xl font-bold text-foreground">{letterCount}</p>
+                            <p className="text-xs text-muted-foreground">Букв</p>
                         </div>
                     </div>
 

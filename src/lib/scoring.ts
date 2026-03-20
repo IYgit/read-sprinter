@@ -88,3 +88,30 @@ export function calcWordSearchScore(foundCount: number, timeElapsedSec: number):
   return foundCount * 100 + speedBonus * foundCount;
 }
 
+/**
+ * Пошук букв:
+ * base  = foundCount × 100 − errors × 25 + max(0, 120 − timeElapsedSec) × 2
+ * difficultyFactor = gridFactor × 0.4 + letterFactor × 0.6  ∈ [0, 1]
+ * score = round(base × (1 + difficultyFactor))
+ *
+ * Діапазони:
+ *   totalCells:  80 клітинок (8×10) → 154 клітинки (11×14)   gridFactor:   0.0 → 1.0
+ *   letterCount: 1 буква            → 4 букви                letterFactor: 0.0 → 1.0
+ *
+ * Множник складності: ×1.0 (найлегше) → ×2.0 (найскладніше)
+ */
+export function calcLetterSearchScore(
+  foundCount: number,
+  errors: number,
+  timeElapsedSec: number,
+  totalCells: number,    // rows × cols
+  letterCount: number,
+): number {
+  const base = foundCount * 100 - errors * 25 + Math.max(0, 120 - timeElapsedSec) * 2;
+  if (base <= 0) return 0;
+  const gridFactor       = Math.max(0, Math.min(1, (totalCells - 80) / 74));
+  const letterFactor     = (letterCount - 1) / 3;
+  const difficultyFactor = gridFactor * 0.4 + letterFactor * 0.6;
+  return Math.round(base * (1 + difficultyFactor));
+}
+
