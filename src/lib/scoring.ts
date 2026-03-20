@@ -56,6 +56,30 @@ export function calcRsvpScore(
 }
 
 /**
+ * Читання синтагмами:
+ * score = round(correctRatio × 100 × (1 + difficultyFactor))
+ * difficultyFactor = speedScore×0.5 + widthScore×0.5  ∈ [0, 1]
+ *
+ * Діапазони (відповідно до UI):
+ *   displayTime: 200–1000 мс  → speedScore: 0.0 (1000 мс) → 1.0 (200 мс)
+ *   syntagmWidth: 1–6 слів    → widthScore: 0.0 (1 сл.)   → 1.0 (6 сл.)
+ *
+ * Результат: 0 → 200 балів
+ */
+export function calcSyntagmScore(
+  correctCount: number,
+  totalQuestions: number,
+  displayTimeMs: number,
+  syntagmWidth: number,
+): number {
+  const correctRatio     = totalQuestions > 0 ? correctCount / totalQuestions : 0;
+  const speedScore       = Math.max(0, Math.min(1, (1000 - displayTimeMs) / 800)); // 200–1000 мс
+  const widthScore       = Math.max(0, Math.min(1, (syntagmWidth - 1) / 5));       // 1–6 сл.
+  const difficultyFactor = speedScore * 0.5 + widthScore * 0.5;
+  return Math.round(correctRatio * 100 * (1 + difficultyFactor));
+}
+
+/**
  * Пошук слів:
  * 100 балів за знайдене слово + бонус швидкості (до 180 сек)
  */

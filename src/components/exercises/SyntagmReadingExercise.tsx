@@ -3,6 +3,7 @@ import { ArrowLeft, Play, Trophy, RotateCcw, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { textsApi, type TextDto } from '@/lib/api';
 import { saveExerciseResult } from '@/lib/exerciseStats';
+import { calcSyntagmScore } from '@/lib/scoring';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
 
 const FONT_SIZE_OPTIONS = [
@@ -113,7 +114,7 @@ const SyntagmReadingExercise = () => {
     ? selectedText.questions.filter(q => answers[q.id] === q.correctIndex).length
     : 0;
   const totalQuestions = selectedText?.questions.length || 0;
-  const score = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+  const score = calcSyntagmScore(correctCount, totalQuestions, displayTime, syntagmWidth);
 
   // Save result
   useEffect(() => {
@@ -144,7 +145,7 @@ const SyntagmReadingExercise = () => {
           <h2 className="text-3xl font-bold mb-2">Результати</h2>
           <p className="text-muted-foreground mb-8">Читання синтагмами — «{selectedText.title}»</p>
 
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <div className="glass-card p-4">
               <p className="text-2xl font-bold text-primary">{score}</p>
               <p className="text-sm text-muted-foreground">Балів</p>
@@ -156,6 +157,10 @@ const SyntagmReadingExercise = () => {
             <div className="glass-card p-4">
               <p className="text-2xl font-bold text-foreground">{displayTime} мс</p>
               <p className="text-sm text-muted-foreground">Час підсвітки</p>
+            </div>
+            <div className="glass-card p-4">
+              <p className="text-2xl font-bold text-foreground">{syntagmWidth} сл.</p>
+              <p className="text-sm text-muted-foreground">Ширина синтагми</p>
             </div>
           </div>
 
