@@ -100,9 +100,11 @@ const RsvpExercise = () => {
     setAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
   };
 
-  const submitAnswers = () => {
+  const submitAnswers = async () => {
     setShowCorrect(true);
-    setTimeout(() => setPhase('results'), 100);
+    const finalScore = calcRsvpScore(correctCount, totalQuestions, displayTime, syntagmWidth);
+    await saveExerciseResult('rsvp', finalScore);
+    setPhase('results');
   };
 
   const correctCount = selectedText
@@ -112,12 +114,7 @@ const RsvpExercise = () => {
 
   const score = calcRsvpScore(correctCount, totalQuestions, displayTime, syntagmWidth);
 
-  // Save result
-  useEffect(() => {
-    if (phase === 'results' && selectedText) {
-      saveExerciseResult('rsvp', score);
-    }
-  }, [phase]);
+
 
   const progress = chunks.length > 0 ? ((currentChunkIndex + 1) / chunks.length) * 100 : 0;
 

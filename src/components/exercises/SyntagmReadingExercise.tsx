@@ -105,9 +105,11 @@ const SyntagmReadingExercise = () => {
     setAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
   };
 
-  const submitAnswers = () => {
+  const submitAnswers = async () => {
     setShowCorrect(true);
-    setTimeout(() => setPhase('results'), 100);
+    const finalScore = calcSyntagmScore(correctCount, totalQuestions, displayTime, syntagmWidth);
+    await saveExerciseResult('syntagm-reading', finalScore);
+    setPhase('results');
   };
 
   const correctCount = selectedText
@@ -116,12 +118,6 @@ const SyntagmReadingExercise = () => {
   const totalQuestions = selectedText?.questions.length || 0;
   const score = calcSyntagmScore(correctCount, totalQuestions, displayTime, syntagmWidth);
 
-  // Save result
-  useEffect(() => {
-    if (phase === 'results' && selectedText) {
-      saveExerciseResult('syntagm-reading', score);
-    }
-  }, [phase]);
 
   const progress = chunks.length > 0 ? ((currentChunkIndex + 1) / chunks.length) * 100 : 0;
 

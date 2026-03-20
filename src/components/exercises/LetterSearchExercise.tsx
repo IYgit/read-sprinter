@@ -110,16 +110,22 @@ const LetterSearchExercise = () => {
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
     }, [phase]);
 
-    const finishGame = useCallback(() => {
+    const finishGame = useCallback(async (finalScore: number) => {
         if (timerRef.current) clearInterval(timerRef.current);
+        await saveExerciseResult('letter-search', finalScore);
         setPhase('results');
     }, []);
 
     useEffect(() => {
         if (phase === 'playing' && foundCount > 0 && foundCount >= totalTargets) {
-            setTimeout(finishGame, 400);
+            const fs = calcLetterSearchScore(
+                foundCount, errors, timeElapsed,
+                gridSize.rows * gridSize.cols, letterCount,
+            );
+            setTimeout(() => finishGame(fs), 400);
         }
-    }, [foundCount, totalTargets, phase, finishGame]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [foundCount, totalTargets, phase]);
 
     const handleCellClick = (r: number, c: number) => {
         if (phase !== 'playing') return;
@@ -147,11 +153,7 @@ const LetterSearchExercise = () => {
         letterCount,
     );
 
-    useEffect(() => {
-        if (phase === 'results') {
-            saveExerciseResult('letter-search', score);
-        }
-    }, [phase]);
+
 
     if (phase === 'settings') {
         return (

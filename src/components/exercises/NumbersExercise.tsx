@@ -93,8 +93,15 @@ const NumbersExercise = () => {
     setRound(nextRound);
 
     if (nextRound >= totalRounds) {
-      setDurationMs(Date.now() - startTimeRef.current);
-      setTimeout(() => setPhase('results'), 1200);
+      const newResults = [...results, result];
+      const newCorrect = newResults.filter(r => r.correct).length;
+      const finalDuration = Date.now() - startTimeRef.current;
+      setDurationMs(finalDuration);
+      const finalScore = calcNumbersScore(newCorrect, finalDuration, newResults.length - newCorrect);
+      setTimeout(async () => {
+        await saveExerciseResult('numbers', finalScore);
+        setPhase('results');
+      }, 1200);
     } else {
       setTimeout(() => {
         showNextNumber();
@@ -120,11 +127,7 @@ const NumbersExercise = () => {
     ? Math.round((correctCount / results.length) * 100)
     : 0;
 
-  useEffect(() => {
-    if (phase === 'results' && results.length > 0) {
-      saveExerciseResult('numbers', score);
-    }
-  }, [phase]);
+
 
   if (phase === 'results') {
     return (

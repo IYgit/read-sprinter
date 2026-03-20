@@ -36,7 +36,6 @@ const SchulteTableExercise = () => {
   const [errors, setErrors] = useState(0);
   const [score, setScore] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const hasSaved = useRef(false);
 
   const totalCells = gridSize * gridSize;
 
@@ -48,7 +47,6 @@ const SchulteTableExercise = () => {
     setWrongCell(null);
     setErrors(0);
     setScore(0);
-    hasSaved.current = false;
     setPhase('playing');
     setStartTime(Date.now());
     setElapsed(0);
@@ -77,10 +75,10 @@ const SchulteTableExercise = () => {
         if (timerRef.current) clearInterval(timerRef.current);
         const finalTime = Date.now() - startTime;
         setElapsed(finalTime);
-        // Score: base 1000, minus time penalty, minus error penalty
         const calculatedScore = calcSchulteScore(finalTime, errors);
         setScore(calculatedScore);
-        setPhase('results');
+        saveExerciseResult('schulte-table', calculatedScore)
+          .then(() => setPhase('results'));
       } else {
         setNextNumber(nextNumber + 1);
       }
@@ -91,12 +89,7 @@ const SchulteTableExercise = () => {
     }
   };
 
-  useEffect(() => {
-    if (phase === 'results' && !hasSaved.current) {
-      hasSaved.current = true;
-      saveExerciseResult('schulte-table', score);
-    }
-  }, [phase, score]);
+
 
   const formatTime = (ms: number) => {
     const totalSec = Math.floor(ms / 1000);

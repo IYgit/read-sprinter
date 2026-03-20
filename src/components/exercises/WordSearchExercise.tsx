@@ -108,17 +108,20 @@ const WordSearchExercise = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase]);
 
-  const finishGame = useCallback(() => {
+  const finishGame = useCallback(async (finalScore: number) => {
     if (timerRef.current) clearInterval(timerRef.current);
+    await saveExerciseResult('word-search', finalScore);
     setPhase('results');
   }, []);
 
   // Check if all words found
   useEffect(() => {
     if (phase === 'playing' && gridData && foundWords.size === gridData.wordsToFind.length) {
-      setTimeout(finishGame, 600);
+      const fs = calcWordSearchScore(foundWords.size, timeElapsed);
+      setTimeout(() => finishGame(fs), 600);
     }
-  }, [foundWords, phase, gridData, finishGame]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [foundWords, phase, gridData]);
 
   // Check if clicked cell is part of any word to find
   const handleCellClick = (row: number, col: number) => {
@@ -146,11 +149,6 @@ const WordSearchExercise = () => {
 
   const score = calcWordSearchScore(foundWords.size, timeElapsed);
 
-  useEffect(() => {
-    if (phase === 'results') {
-      saveExerciseResult('word-search', score);
-    }
-  }, [phase, score]);
 
   if (phase === 'settings') {
     return (
@@ -294,7 +292,10 @@ const WordSearchExercise = () => {
   return (
     <div className="max-w-3xl mx-auto p-4 lg:p-6">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={finishGame} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+        <button
+          onClick={() => finishGame(calcWordSearchScore(foundWords.size, timeElapsed))}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ArrowLeft size={20} /> Завершити
         </button>
         <span className="text-sm font-mono text-muted-foreground">{timeElapsed}с</span>

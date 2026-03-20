@@ -109,15 +109,17 @@ const WordPairsExercise = () => {
     }
   }, [timeLeft, phase]);
 
-  const finishGame = useCallback(() => {
+  const finishGame = useCallback(async () => {
     if (timerRef.current) clearInterval(timerRef.current);
     const finalMs = Date.now() - startTimeRef.current;
     const missed = grid.flat().filter(c => c.pair.isDifferent && !c.selected).length;
     setMissedPairs(missed);
     setDurationMs(finalMs);
     setGrid(prev => prev.map(row => row.map(cell => ({ ...cell, revealed: true }))));
+    const finalScore = calcWordPairsScore(correctSelections, wrongSelections, finalMs);
+    await saveExerciseResult('word-pairs', finalScore);
     setPhase('results');
-  }, [grid]);
+  }, [grid, correctSelections, wrongSelections]);
 
   const handleCellClick = (r: number, c: number) => {
     if (phase !== 'playing' || grid[r][c].selected) return;
@@ -147,11 +149,7 @@ const WordPairsExercise = () => {
     }
   }, [allDifferentFound, phase, finishGame]);
 
-  useEffect(() => {
-    if (phase === 'results') {
-      saveExerciseResult('word-pairs', score);
-    }
-  }, [phase, score]);
+
 
   if (phase === 'settings') {
     return (
