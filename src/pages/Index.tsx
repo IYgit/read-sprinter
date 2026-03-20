@@ -112,7 +112,7 @@ const Index = () => {
             </div>
 
             <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-              <span className="text-gradient">Швидкочитання</span>
+              <span className="text-gradient">Read Sprinter</span>
             </h1>
 
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
