@@ -7,6 +7,7 @@ import DuelNumbersLobby from '@/components/duel/DuelNumbersLobby';
 import DuelWordPairsLobby from '@/components/duel/DuelWordPairsLobby';
 import DuelRsvpLobby from '@/components/duel/DuelRsvpLobby';
 import DuelWordSearchLobby from '@/components/duel/DuelWordSearchLobby';
+import DuelSyntagmLobby from '@/components/duel/DuelSyntagmLobby';
 import DuelWaiting from '@/components/duel/DuelWaiting';
 import DuelCountdown from '@/components/duel/DuelCountdown';
 import DuelSchulteGame from '@/components/duel/DuelSchulteGame';
@@ -14,13 +15,14 @@ import DuelNumbersGame from '@/components/duel/DuelNumbersGame';
 import DuelWordPairsGame from '@/components/duel/DuelWordPairsGame';
 import DuelRsvpGame from '@/components/duel/DuelRsvpGame';
 import DuelWordSearchGame from '@/components/duel/DuelWordSearchGame';
+import DuelSyntagmGame from '@/components/duel/DuelSyntagmGame';
 import DuelResults from '@/components/duel/DuelResults';
 import { useDuelWebSocket, type MatchFoundEvent, type DuelEvent, type ParticipantResult } from '@/hooks/useDuelWebSocket';
 import { type JoinQueueRequest } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
 
 type Phase = 'exercise-select' | 'lobby' | 'waiting' | 'countdown' | 'playing' | 'results';
-type ExerciseType = 'schulte-table' | 'numbers' | 'word-pairs' | 'rsvp' | 'word-search';
+type ExerciseType = 'schulte-table' | 'numbers' | 'word-pairs' | 'rsvp' | 'word-search' | 'syntagm-reading';
 
 interface MatchInfo {
   sessionId: number;
@@ -56,6 +58,12 @@ interface MatchInfo {
   wsCols: number;
   wsWordCount: number;
   wsFontSize: number;
+  // Syntagm Reading exercise
+  syntagmSyntagmWidth: number;
+  syntagmDisplayTime: number;
+  syntagmTextTitle: string;
+  syntagmTextContent: string;
+  syntagmQuestions: { id: number; text: string; options: string[]; correctIndex: number }[];
 }
 
 function buildExerciseLabel(info: MatchInfo): string {
@@ -70,6 +78,9 @@ function buildExerciseLabel(info: MatchInfo): string {
   }
   if (info.exerciseType === 'word-search') {
     return `Пошук слів ${info.wsRows}×${info.wsCols}, ${info.wsWordCount} слів`;
+  }
+  if (info.exerciseType === 'syntagm-reading') {
+    return `Синтагми — ${info.syntagmSyntagmWidth} сл., ${info.syntagmDisplayTime} мс`;
   }
   return `Таблиця Шульте ${info.gridSize}×${info.gridSize}`;
 }
@@ -119,6 +130,11 @@ const DuelExercise = () => {
       wsCols: event.wsCols ?? 11,
       wsWordCount: event.wsWordCount ?? 3,
       wsFontSize: event.wsFontSize ?? 16,
+      syntagmSyntagmWidth: event.rsvpSyntagmWidth ?? 2,
+      syntagmDisplayTime: event.rsvpDisplayTime ?? 500,
+      syntagmTextTitle: event.rsvpTextTitle ?? '',
+      syntagmTextContent: event.rsvpTextContent ?? '',
+      syntagmQuestions: event.rsvpQuestions ?? [],
     });
     setPhase('countdown');
   }, []);
@@ -262,6 +278,10 @@ const DuelExercise = () => {
         <DuelWordSearchLobby onStartSearch={handleStartSearch} onBack={handleBackToSelect} />
       )}
 
+      {phase === 'lobby' && selectedExercise === 'syntagm-reading' && (
+        <DuelSyntagmLobby onStartSearch={handleStartSearch} onBack={handleBackToSelect} />
+      )}
+
       {phase === 'waiting' && (
         <DuelWaiting onCancel={handleCancelSearch} />
       )}
@@ -361,6 +381,29 @@ const DuelExercise = () => {
             wsWordCount:     matchInfo.wsWordCount,
             wsFontSize:      matchInfo.wsFontSize,
             totalCells:      matchInfo.totalCells,
+          }}
+          opponentProgress={opponentProgress}
+          opponentFinished={opponentFinished}
+          opponentDurationMs={opponentDurationMs}
+          opponentDisconnected={opponentDisconnected}
+          opponentLeft={opponentLeft}
+          onProgress={(progress, errors) => sendProgress(matchInfo.sessionId, progress, errors)}
+          onFinish={handleMyFinish}
+          onLeave={handleLeave}
+        />
+      )}
+
+      {phase === 'playing' && matchInfo && matchInfo.exerciseType === 'syntagm-reading' && (
+        <DuelSyntagmGame
+          matchInfo={{
+            sessionId:    matchInfo.sessionId,
+            opponentName: matchInfo.opponentName,
+            syntagmWidth: matchInfo.syntagmSyntagmWidth,
+            displayTime:  matchInfo.syntagmDisplayTime,
+            textTitle:    matchInfo.syntagmTextTitle,
+            textContent:  matchInfo.syntagmTextContent,
+            questions:    matchInfo.syntagmQuestions,
+            totalCells:   matchInfo.totalCells,
           }}
           opponentProgress={opponentProgress}
           opponentFinished={opponentFinished}
