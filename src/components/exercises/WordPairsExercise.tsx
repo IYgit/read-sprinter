@@ -61,6 +61,7 @@ const WordPairsExercise = () => {
   const [totalDifferent, setTotalDifferent] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef(0);
+  const hasSaved = useRef(false);
 
   // Реактивне обчислення балів — оновлюється після кожного кліку та кожну секунду.
   // В фазі 'playing' використовує поточний elapsed (точність: 1 сек).
@@ -72,6 +73,7 @@ const WordPairsExercise = () => {
   );
 
   const startGame = useCallback(async () => {
+    hasSaved.current = false;
     setPhase('loading');
     try {
       const items = await wordPairsApi.getGrid(rows, cols);
@@ -105,13 +107,10 @@ const WordPairsExercise = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase]);
 
-  useEffect(() => {
-    if (phase === 'playing' && timeLeft === 0) {
-      finishGame();
-    }
-  }, [timeLeft, phase]);
-
   const finishGame = useCallback(async () => {
+    if (hasSaved.current) return;
+    hasSaved.current = true;
+
     if (timerRef.current) clearInterval(timerRef.current);
     const finalMs = Date.now() - startTimeRef.current;
     const missed = grid.flat().filter(c => c.pair.isDifferent && !c.selected).length;
@@ -122,6 +121,12 @@ const WordPairsExercise = () => {
     await saveExerciseResult('word-pairs', finalScore);
     setPhase('results');
   }, [grid, correctSelections, wrongSelections]);
+
+  useEffect(() => {
+    if (phase === 'playing' && timeLeft === 0) {
+      finishGame();
+    }
+  }, [timeLeft, phase, finishGame]);
 
   const handleCellClick = (r: number, c: number) => {
     if (phase !== 'playing' || grid[r][c].selected) return;
