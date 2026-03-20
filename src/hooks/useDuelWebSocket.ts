@@ -63,6 +63,12 @@ export interface MatchFoundEvent {
   wsCols?: number;
   wsWordCount?: number;
   wsFontSize?: number;
+  // Letter Search exercise
+  lsGrid?: string[][];
+  lsTargetLetters?: string[];
+  lsRows?: number;
+  lsCols?: number;
+  lsLetterCount?: number;
 }
 
 export interface ParticipantResult {
