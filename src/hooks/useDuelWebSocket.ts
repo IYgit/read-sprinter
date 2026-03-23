@@ -32,10 +32,43 @@ export interface MatchFoundEvent {
   sessionId: number;
   opponentName: string;
   exerciseType: string;
+  // Schulte Table
   gridSize: number;
   fontSize: number;
+  // Shared
   numbers: number[];
   totalCells: number;
+  // Numbers exercise
+  digitCount?: number;
+  displayTime?: number;
+  totalRounds?: number;
+  // Word Pairs exercise
+  pairs?: { w1: string; w2: string; diff: boolean }[];
+  wpRows?: number;
+  wpCols?: number;
+  wpTimeLimit?: number;
+  wpFontSize?: number;
+  // RSVP exercise
+  rsvpSyntagmWidth?: number;
+  rsvpDisplayTime?: number;
+  rsvpTextId?: number;
+  rsvpTextTitle?: string;
+  rsvpTextContent?: string;
+  rsvpQuestions?: { id: number; text: string; options: string[]; correctIndex: number }[];
+  // Word Search exercise
+  wsGrid?: string[][];
+  wsWords?: string[];
+  wsWordPositions?: { word: string; row: number; startCol: number }[];
+  wsRows?: number;
+  wsCols?: number;
+  wsWordCount?: number;
+  wsFontSize?: number;
+  // Letter Search exercise
+  lsGrid?: string[][];
+  lsTargetLetters?: string[];
+  lsRows?: number;
+  lsCols?: number;
+  lsLetterCount?: number;
 }
 
 export interface ParticipantResult {

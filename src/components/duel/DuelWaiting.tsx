@@ -1,5 +1,6 @@
 ﻿import { useRef } from 'react';
 import { Loader2, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { duelApi } from '@/lib/api';
 
 interface DuelWaitingProps {
@@ -8,6 +9,7 @@ interface DuelWaitingProps {
 
 const DuelWaiting = ({ onCancel }: DuelWaitingProps) => {
   const cancelledRef = useRef(false);
+  const { t } = useTranslation();
 
   const handleCancel = async () => {
     if (cancelledRef.current) return;
@@ -25,10 +27,8 @@ const DuelWaiting = ({ onCancel }: DuelWaitingProps) => {
       <div className="flex items-center justify-center mb-6">
         <Loader2 size={48} className="text-primary animate-spin" />
       </div>
-      <h2 className="text-xl font-bold mb-2">Шукаємо суперника...</h2>
-      <p className="text-sm text-muted-foreground mb-8">
-        Як тільки знайдемо гравця — гра почнеться автоматично
-      </p>
+      <h2 className="text-xl font-bold mb-2">{t('duel.searching')}</h2>
+      <p className="text-sm text-muted-foreground mb-8">{t('duel.searchingSubtitle')}</p>
       <div className="flex justify-center gap-1 mb-8">
         {[0, 1, 2].map(i => (
           <span
@@ -42,8 +42,7 @@ const DuelWaiting = ({ onCancel }: DuelWaitingProps) => {
         onClick={handleCancel}
         className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
       >
-        <X size={16} />
-        Скасувати
+        <X size={16} /> {t('duel.cancel')}
       </button>
     </div>
   );

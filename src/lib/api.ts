@@ -190,11 +190,14 @@ export const resultsApi = {
 
 // ─── Duel / Matchmaking ──────────────────────────────────────────────────────
 
-export interface JoinQueueRequest {
-  exerciseType: string;
-  gridSize: number;
-  fontSize: number;
-}
+export type JoinQueueRequest =
+  | { exerciseType: 'schulte-table';    gridSize: number; fontSize: number }
+  | { exerciseType: 'numbers';          digitCount: number; displayTime: number }
+  | { exerciseType: 'word-pairs';       wpRows: number; wpCols: number; wpTimeLimit: number; wpFontSize: number }
+  | { exerciseType: 'rsvp';             rsvpSyntagmWidth: number; rsvpDisplayTime: number }
+  | { exerciseType: 'word-search';      wsRows: number; wsCols: number; wsWordCount: number; wsFontSize: number }
+  | { exerciseType: 'syntagm-reading';  syntagmWidth: number; displayTime: number }
+  | { exerciseType: 'letter-search';    gridSizeIdx: number; letterCount: number };
 
 export interface JoinQueueResponse {
   status: 'matched' | 'waiting';
@@ -207,5 +210,20 @@ export const duelApi = {
 
   leaveQueue: () =>
     apiFetch<void>('/api/duels/queue', { method: 'DELETE' }),
+};
+
+export interface WordPairItem {
+  w1: string;
+  w2: string;
+  diff: boolean;
+}
+
+export const wordPairsApi = {
+  getGrid: (rows: number, cols: number) =>
+    apiFetch<WordPairItem[]>(`/api/word-pairs?rows=${rows}&cols=${cols}`),
+};
+
+export const wordSearchApi = {
+  getWords: () => apiFetch<string[]>('/api/word-search/words'),
 };
 

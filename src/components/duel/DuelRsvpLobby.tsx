@@ -1,30 +1,25 @@
-﻿import { useState } from 'react';
-import { Swords, Grid3X3 } from 'lucide-react';
+import { useState } from 'react';
+import { Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { type JoinQueueRequest } from '@/lib/api';
 
-interface DuelLobbyProps {
+interface DuelRsvpLobbyProps {
   onStartSearch: (req: JoinQueueRequest) => void;
   onBack: () => void;
 }
 
-const FONT_SIZE_OPTIONS = [
-  { label: 'S', value: 16 },
-  { label: 'M', value: 20 },
-  { label: 'L', value: 26 },
-  { label: 'XL', value: 32 },
-];
+const DISPLAY_TIME_OPTIONS = [100, 200, 300, 500, 700, 1000];
 
-const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
-  const [gridSize, setGridSize] = useState(5);
-  const [fontSize, setFontSize] = useState(20);
+const DuelRsvpLobby = ({ onStartSearch, onBack }: DuelRsvpLobbyProps) => {
+  const [syntagmWidth, setSyntagmWidth] = useState(3);
+  const [rsvpDisplayTime, setRsvpDisplayTime] = useState(300);
   const { t } = useTranslation();
 
   const handleSearch = () => {
     onStartSearch({
-      exerciseType: 'schulte-table',
-      gridSize,
-      fontSize,
+      exerciseType: 'rsvp',
+      rsvpSyntagmWidth: syntagmWidth,
+      rsvpDisplayTime,
     });
   };
 
@@ -32,64 +27,64 @@ const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
     <div className="glass-card p-8 animate-fade-in-up">
       <div className="text-center mb-8">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-          <Swords size={32} className="text-primary" />
+          <Eye size={32} className="text-primary" />
         </div>
-        <h2 className="text-2xl font-bold mb-2">{t('schulte.titleDuel')}</h2>
-        <p className="text-sm text-muted-foreground">
-          {t('schulte.subtitleDuel')}
-        </p>
+        <h2 className="text-2xl font-bold mb-2">{t('rsvp.titleDuel')}</h2>
+        <p className="text-sm text-muted-foreground">{t('rsvp.subtitleDuel')}</p>
       </div>
 
       <div className="space-y-6 mb-8">
+        {/* Syntagm width */}
         <div>
           <p className="text-sm font-medium text-muted-foreground mb-3">
-            {t('schulte.gridSize', { size: gridSize, total: gridSize * gridSize })}
+            {t('rsvp.syntagmWidthLabel')}{' '}
+            <span className="text-primary font-bold text-lg">{syntagmWidth} {t('rsvp.wordUnit', { count: syntagmWidth })}</span>
           </p>
           <div className="flex gap-2">
-            {[3, 4, 5, 6, 7].map(s => (
+            {[1, 2, 3, 4, 5].map((n) => (
               <button
-                key={s}
-                onClick={() => setGridSize(s)}
+                key={n}
+                onClick={() => setSyntagmWidth(n)}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  gridSize === s
+                  syntagmWidth === n
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
               >
-                {s}×{s}
+                {n}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Display time */}
         <div>
           <p className="text-sm font-medium text-muted-foreground mb-3">
-            {t('common.fontSize')}
+            {t('rsvp.displayTimeDuel')}{' '}
+            <span className="text-accent font-bold text-lg">{rsvpDisplayTime} {t('common.ms')}</span>
           </p>
-          <div className="flex gap-2">
-            {FONT_SIZE_OPTIONS.map(opt => (
+          <div className="flex gap-2 flex-wrap">
+            {DISPLAY_TIME_OPTIONS.map((ms) => (
               <button
-                key={opt.value}
-                onClick={() => setFontSize(opt.value)}
+                key={ms}
+                onClick={() => setRsvpDisplayTime(ms)}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  fontSize === opt.value
+                  rsvpDisplayTime === ms
                     ? 'bg-accent text-accent-foreground'
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
               >
-                {opt.label}
+                {ms < 1000 ? `${ms}${t('common.ms')}` : `${ms / 1000}${t('common.seconds')}`}
               </button>
             ))}
           </div>
         </div>
 
         <div className="glass-card p-4 text-sm text-muted-foreground space-y-1">
-          <p className="flex items-center gap-2">
-            <Grid3X3 size={16} className="text-primary shrink-0" />
-            {t('schulte.negotiation')}
-          </p>
-          <p className="pl-6">• {t('schulte.negotiationSize')}</p>
-          <p className="pl-6">• {t('schulte.negotiationFont')}</p>
+          <p>{t('rsvp.negotiation')}</p>
+          <p className="pl-4">• {t('rsvp.negotiationWidth')}</p>
+          <p className="pl-4">• {t('rsvp.negotiationTime')}</p>
+          <p className="pl-4">• {t('rsvp.negotiationText')}</p>
         </div>
       </div>
 
@@ -98,7 +93,7 @@ const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
           onClick={handleSearch}
           className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
         >
-          <Swords size={20} /> {t('duel.joinQueue')}
+          <Eye size={20} /> {t('duel.joinQueue')}
         </button>
         <button
           onClick={onBack}
@@ -111,4 +106,5 @@ const DuelLobby = ({ onStartSearch, onBack }: DuelLobbyProps) => {
   );
 };
 
-export default DuelLobby;
+export default DuelRsvpLobby;
+

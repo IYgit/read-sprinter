@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ArrowLeft, Play, Settings, Trophy, RotateCcw, Timer } from 'lucide-react';
+import { ArrowLeft, Play, Settings, Trophy, RotateCcw, Timer, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
+import { wordPairsApi } from '@/lib/api';
+import { calcWordPairsScore } from '@/lib/scoring';
+import { useTranslation } from 'react-i18next';
 
 interface WordPair {
   word1: string;
@@ -16,58 +19,21 @@ interface CellState {
   revealed: boolean;
 }
 
-const WORD_PAIR_SETS: [string, string][] = [
-  ['десна', 'весна'], ['галант', 'талант'], ['арфа', 'фара'],
-  ['кішка', 'мішка'], ['лопата', 'робота'], ['марка', 'парка'],
-  ['палата', 'салата'], ['горіх', 'поріг'], ['калина', 'малина'],
-  ['ворон', 'ворог'], ['барон', 'вагон'], ['банка', 'ранка'],
-  ['сила', 'піла'], ['доля', 'воля'], ['нитка', 'вітка'],
-  ['крило', 'грило'], ['гроза', 'проза'], ['казка', 'маска'],
-  ['лимон', 'вагон'], ['місто', 'тісто'], ['кобра', 'добра'],
-  ['крига', 'книга'], ['човен', 'вогонь'], ['верба', 'герба'],
-  ['школа', 'скала'], ['рамка', 'лампа'], ['ніжка', 'мішка'],
-  ['кінець', 'вінець'], ['ложка', 'мошка'], ['бочка', 'кочка'],
-];
-
-const SAME_WORDS: string[] = [
-  'ілюзія', 'вигін', 'музика', 'плаття', 'дзеркало', 'зоряний',
-  'пілот', 'кулон', 'ескімо', 'перлина', 'лавина', 'фонтан',
-  'медаль', 'океан', 'парасон', 'вулкан', 'магніт', 'орбіта',
-];
-
 const FONT_SIZE_OPTIONS = [
   { label: 'S', value: 12 },
   { label: 'M', value: 14 },
   { label: 'L', value: 18 },
 ];
 
-function generateGrid(rows: number, cols: number, diffRatio: number): CellState[][] {
-  const totalCells = rows * cols;
-  const diffCount = Math.floor(totalCells * diffRatio);
-  const sameCount = totalCells - diffCount;
-
-  const pairs: WordPair[] = [];
-
-  const shuffledDiff = [...WORD_PAIR_SETS].sort(() => Math.random() - 0.5);
-  for (let i = 0; i < diffCount; i++) {
-    const [w1, w2] = shuffledDiff[i % shuffledDiff.length];
-    pairs.push({ word1: w1, word2: w2, isDifferent: true });
-  }
-
-  const shuffledSame = [...SAME_WORDS].sort(() => Math.random() - 0.5);
-  for (let i = 0; i < sameCount; i++) {
-    const w = shuffledSame[i % shuffledSame.length];
-    pairs.push({ word1: w, word2: w, isDifferent: false });
-  }
-
-  const shuffled = pairs.sort(() => Math.random() - 0.5);
-
+/** Convert flat API response into 2D grid of CellState */
+function buildGrid(rows: number, cols: number, items: { w1: string; w2: string; diff: boolean }[]): CellState[][] {
   const grid: CellState[][] = [];
   for (let r = 0; r < rows; r++) {
     const row: CellState[] = [];
     for (let c = 0; c < cols; c++) {
+      const item = items[r * cols + c];
       row.push({
-        pair: shuffled[r * cols + c],
+        pair: { word1: item.w1, word2: item.w2, isDifferent: item.diff },
         selected: false,
         revealed: false,
       });
@@ -79,31 +45,52 @@ function generateGrid(rows: number, cols: number, diffRatio: number): CellState[
 
 const WordPairsExercise = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [rows, setRows] = useState(4);
   const [cols, setCols] = useState(4);
   const [timeLimit, setTimeLimit] = useState(60);
   const [fontSize, setFontSize] = useState(14);
-  const [phase, setPhase] = useState<'settings' | 'playing' | 'results'>('settings');
+  const [phase, setPhase] = useState<'settings' | 'loading' | 'playing' | 'results'>('settings');
   const [grid, setGrid] = useState<CellState[][]>([]);
   const [timeLeft, setTimeLeft] = useState(0);
-  const [score, setScore] = useState(0);
+  const [durationMs, setDurationMs] = useState(0);
   const [correctSelections, setCorrectSelections] = useState(0);
   const [wrongSelections, setWrongSelections] = useState(0);
   const [missedPairs, setMissedPairs] = useState(0);
   const [totalDifferent, setTotalDifferent] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef(0);
+  const hasSaved = useRef(false);
 
-  const startGame = useCallback(() => {
-    const newGrid = generateGrid(rows, cols, 0.5);
-    setGrid(newGrid);
-    setTimeLeft(timeLimit);
-    setScore(0);
-    setCorrectSelections(0);
-    setWrongSelections(0);
-    setPhase('playing');
-    const diffCount = newGrid.flat().filter(c => c.pair.isDifferent).length;
-    setTotalDifferent(diffCount);
+  // Реактивне обчислення балів — оновлюється після кожного кліку та кожну секунду.
+  // В фазі 'playing' використовує поточний elapsed (точність: 1 сек).
+  // В фазі 'results' використовує точний finalMs, збережений у durationMs.
+  const score = calcWordPairsScore(
+    correctSelections,
+    wrongSelections,
+    phase === 'results' ? durationMs : (timeLimit - timeLeft) * 1000,
+  );
+
+  const startGame = useCallback(async () => {
+    hasSaved.current = false;
+    setPhase('loading');
+    try {
+      const items = await wordPairsApi.getGrid(rows, cols);
+      const newGrid = buildGrid(rows, cols, items);
+      const diffCount = newGrid.flat().filter(c => c.pair.isDifferent).length;
+      setGrid(newGrid);
+      setTimeLeft(timeLimit);
+      setDurationMs(0);
+      setCorrectSelections(0);
+      setWrongSelections(0);
+      setTotalDifferent(diffCount);
+      startTimeRef.current = Date.now();
+      setPhase('playing');
+    } catch {
+      // fallback: return to settings on error
+      setPhase('settings');
+    }
   }, [rows, cols, timeLimit]);
 
   useEffect(() => {
@@ -120,19 +107,26 @@ const WordPairsExercise = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase]);
 
+  const finishGame = useCallback(async () => {
+    if (hasSaved.current) return;
+    hasSaved.current = true;
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    const finalMs = Date.now() - startTimeRef.current;
+    const missed = grid.flat().filter(c => c.pair.isDifferent && !c.selected).length;
+    setMissedPairs(missed);
+    setDurationMs(finalMs);
+    setGrid(prev => prev.map(row => row.map(cell => ({ ...cell, revealed: true }))));
+    const finalScore = calcWordPairsScore(correctSelections, wrongSelections, finalMs);
+    await saveExerciseResult('word-pairs', finalScore);
+    setPhase('results');
+  }, [grid, correctSelections, wrongSelections]);
+
   useEffect(() => {
     if (phase === 'playing' && timeLeft === 0) {
       finishGame();
     }
-  }, [timeLeft, phase]);
-
-  const finishGame = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    const missed = grid.flat().filter(c => c.pair.isDifferent && !c.selected).length;
-    setMissedPairs(missed);
-    setGrid(prev => prev.map(row => row.map(cell => ({ ...cell, revealed: true }))));
-    setPhase('results');
-  }, [grid]);
+  }, [timeLeft, phase, finishGame]);
 
   const handleCellClick = (r: number, c: number) => {
     if (phase !== 'playing' || grid[r][c].selected) return;
@@ -148,10 +142,8 @@ const WordPairsExercise = () => {
     });
 
     if (isCorrect) {
-      setScore(prev => prev + 100);
       setCorrectSelections(prev => prev + 1);
     } else {
-      setScore(prev => prev - 50);
       setWrongSelections(prev => prev + 1);
     }
   };
@@ -164,11 +156,7 @@ const WordPairsExercise = () => {
     }
   }, [allDifferentFound, phase, finishGame]);
 
-  useEffect(() => {
-    if (phase === 'results') {
-      saveExerciseResult('word-pairs', Math.max(0, score));
-    }
-  }, [phase]);
+
 
   if (phase === 'settings') {
     return (
@@ -273,7 +261,7 @@ const WordPairsExercise = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <div className="glass-card p-4">
-              <p className="text-2xl font-bold text-primary">{Math.max(0, score)}</p>
+              <p className="text-2xl font-bold text-primary">{score}</p>
               <p className="text-xs text-muted-foreground">Балів</p>
             </div>
             <div className="glass-card p-4">
@@ -305,20 +293,64 @@ const WordPairsExercise = () => {
     );
   }
 
+  if (phase === 'loading') {
+    return (
+      <div className="max-w-2xl mx-auto p-4 lg:p-6 flex items-center justify-center min-h-[300px]">
+        <div className="flex flex-col items-center gap-3 text-muted-foreground">
+          <Loader2 size={36} className="animate-spin text-primary" />
+          <p>Завантаження слів...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Playing
   return (
     <div className="max-w-4xl mx-auto p-4 lg:p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <button onClick={finishGame} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft size={20} /> Завершити
         </button>
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
-            Бали: <span className="text-primary font-bold">{Math.max(0, score)}</span>
+            Бали: <span className="text-primary font-bold">{score}</span>
           </span>
           <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full ${timeLeft <= 10 ? 'bg-destructive/20 text-destructive' : 'bg-primary/10 text-primary'}`}>
             <Timer size={16} />
             <span className="font-bold font-mono">{timeLeft}с</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress bars */}
+      <div className="space-y-2 mb-5">
+        {/* Time bar */}
+        <div>
+          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+            <span>Час</span>
+            <span>{timeLeft} / {timeLimit}с</span>
+          </div>
+          <div className="h-2 rounded-full bg-secondary overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-1000 ease-linear ${
+                timeLeft <= 10 ? 'bg-destructive' : timeLeft <= 20 ? 'bg-accent' : 'bg-primary'
+              }`}
+              style={{ width: `${(timeLeft / timeLimit) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Found pairs bar */}
+        <div>
+          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+            <span>Знайдено пар</span>
+            <span>{correctSelections} / {totalDifferent}</span>
+          </div>
+          <div className="h-2 rounded-full bg-secondary overflow-hidden">
+            <div
+              className="h-full rounded-full bg-success transition-all duration-300"
+              style={{ width: totalDifferent > 0 ? `${(correctSelections / totalDifferent) * 100}%` : '0%' }}
+            />
           </div>
         </div>
       </div>

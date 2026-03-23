@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { ArrowLeft, Play, Trophy, RotateCcw, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { textsApi, type TextDto } from '@/lib/api';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
+import { calcRsvpScore } from '@/lib/scoring';
 
 const FONT_SIZE_OPTIONS = [
   { label: 'M', value: 28 },
@@ -13,6 +15,7 @@ const FONT_SIZE_OPTIONS = [
 
 const RsvpExercise = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Texts from API
   const [texts, setTexts] = useState<TextDto[]>([]);
@@ -99,23 +102,21 @@ const RsvpExercise = () => {
     setAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
   };
 
-  const submitAnswers = () => {
+  const submitAnswers = async () => {
     setShowCorrect(true);
-    setTimeout(() => setPhase('results'), 100);
+    const finalScore = calcRsvpScore(correctCount, totalQuestions, displayTime, syntagmWidth);
+    await saveExerciseResult('rsvp', finalScore);
+    setPhase('results');
   };
 
   const correctCount = selectedText
     ? selectedText.questions.filter(q => answers[q.id] === q.correctIndex).length
     : 0;
   const totalQuestions = selectedText?.questions.length || 0;
-  const score = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
 
-  // Save result
-  useEffect(() => {
-    if (phase === 'results' && selectedText) {
-      saveExerciseResult('rsvp', score);
-    }
-  }, [phase]);
+  const score = calcRsvpScore(correctCount, totalQuestions, displayTime, syntagmWidth);
+
+
 
   const progress = chunks.length > 0 ? ((currentChunkIndex + 1) / chunks.length) * 100 : 0;
 
@@ -128,33 +129,37 @@ const RsvpExercise = () => {
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
         >
           <ArrowLeft size={20} />
-          До вибору вправ
+          {t('common.back')}
         </button>
 
         <div className="glass-card p-8 text-center">
           <Trophy size={48} className="text-accent mx-auto mb-4" />
-          <h2 className="text-3xl font-bold mb-2">Результати</h2>
-          <p className="text-muted-foreground mb-8">RSVP — «{selectedText.title}»</p>
+          <h2 className="text-3xl font-bold mb-2">{t('common.results')}</h2>
+          <p className="text-muted-foreground mb-8">{t('rsvp.resultSubtitle', { title: selectedText.title })}</p>
 
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <div className="glass-card p-4">
               <p className="text-2xl font-bold text-primary">{score}</p>
-              <p className="text-sm text-muted-foreground">Балів</p>
+              <p className="text-sm text-muted-foreground">{t('common.score')}</p>
             </div>
             <div className="glass-card p-4">
               <p className="text-2xl font-bold text-accent">{correctCount}/{totalQuestions}</p>
-              <p className="text-sm text-muted-foreground">Правильно</p>
+              <p className="text-sm text-muted-foreground">{t('common.correct')}</p>
             </div>
             <div className="glass-card p-4">
-              <p className="text-2xl font-bold text-foreground">{displayTime} мс</p>
-              <p className="text-sm text-muted-foreground">Час показу</p>
+              <p className="text-2xl font-bold text-foreground">{displayTime} {t('common.ms')}</p>
+              <p className="text-sm text-muted-foreground">{t('rsvp.highlightTime')}</p>
+            </div>
+            <div className="glass-card p-4">
+              <p className="text-2xl font-bold text-foreground">{syntagmWidth}</p>
+              <p className="text-sm text-muted-foreground">{t('rsvp.syntagmWidth')}</p>
             </div>
           </div>
 
           {/* Question details */}
           <div className="text-left space-y-2 mb-8">
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">
-              Відповіді
+              {t('rsvp.answers')}
             </h3>
             {selectedText.questions.map((q, i) => {
               const userAnswer = answers[q.id];
@@ -170,11 +175,11 @@ const RsvpExercise = () => {
                 >
                   <p className="text-sm font-medium mb-1">{q.text}</p>
                   <p className="text-xs text-muted-foreground">
-                    Ваша відповідь: <span className={isCorrect ? 'text-success' : 'text-destructive'}>
+                    {t('rsvp.yourAnswer')} <span className={isCorrect ? 'text-success' : 'text-destructive'}>
                       {userAnswer !== undefined ? q.options[userAnswer] : '—'}
                     </span>
                     {!isCorrect && (
-                      <> · Правильно: <span className="text-success">{q.options[q.correctIndex]}</span></>
+                      <> · {t('rsvp.correctAnswer')} <span className="text-success">{q.options[q.correctIndex]}</span></>
                     )}
                   </p>
                 </div>
@@ -182,18 +187,18 @@ const RsvpExercise = () => {
             })}
           </div>
 
-          <ExerciseStatsChart exerciseId="rsvp" title="Статистика — RSVP" />
+          <ExerciseStatsChart exerciseId="rsvp" title={t('rsvp.history')} />
 
           <div className="flex gap-4 justify-center mt-6">
             <button onClick={() => { setPhase('settings'); setSelectedText(null); }} className="btn-primary flex items-center gap-2">
               <RotateCcw size={18} />
-              Ще раз
+              {t('common.restart')}
             </button>
             <button
               onClick={() => navigate('/')}
               className="px-6 py-3 rounded-xl border border-border hover:bg-secondary/50 transition-colors"
             >
-              До вправ
+              {t('common.toExercises')}
             </button>
           </div>
         </div>
@@ -211,12 +216,12 @@ const RsvpExercise = () => {
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
         >
           <ArrowLeft size={20} />
-          Назад
+          {t('common.back')}
         </button>
 
         <div className="glass-card p-8">
-          <h2 className="text-2xl font-bold mb-2 text-center">Перевірка розуміння</h2>
-          <p className="text-muted-foreground text-center mb-8">Дайте відповідь на питання за текстом</p>
+          <h2 className="text-2xl font-bold mb-2 text-center">{t('rsvp.comprehension')}</h2>
+          <p className="text-muted-foreground text-center mb-8">{t('rsvp.comprehensionSubtitle')}</p>
 
           <div className="space-y-6">
             {selectedText.questions.map((q, qi) => (
@@ -246,7 +251,7 @@ const RsvpExercise = () => {
             disabled={!allAnswered}
             className="btn-primary w-full mt-8 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Перевірити
+            {t('rsvp.submit')}
           </button>
         </div>
       </div>
@@ -263,10 +268,10 @@ const RsvpExercise = () => {
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft size={20} />
-            Зупинити
+            {t('common.stop')}
           </button>
           <div className="text-sm text-muted-foreground">
-            {syntagmWidth} сл. · {displayTime} мс
+            {syntagmWidth} {t('rsvp.syntagmWidth').toLowerCase()} · {displayTime} {t('common.ms')}
           </div>
         </div>
 
@@ -287,7 +292,7 @@ const RsvpExercise = () => {
                 {chunks[currentChunkIndex]}
               </span>
             ) : (
-              <span className="text-muted-foreground text-lg">Читання завершено</span>
+              <span className="text-muted-foreground text-lg">{t('rsvp.readingComplete')}</span>
             )}
           </div>
         </div>
@@ -297,14 +302,14 @@ const RsvpExercise = () => {
           {!isPlaying ? (
             <button onClick={startReading} className="btn-primary flex items-center gap-2 text-lg">
               <Play size={22} />
-              {currentChunkIndex === 0 ? 'Старт' : 'Продовжити'}
+              {currentChunkIndex === 0 ? t('common.start') : t('common.resume')}
             </button>
           ) : (
             <button
               onClick={pauseReading}
               className="px-6 py-3 rounded-xl border border-border hover:bg-secondary/50 transition-colors flex items-center gap-2"
             >
-              Пауза
+              {t('common.pause')}
             </button>
           )}
         </div>
@@ -320,7 +325,7 @@ const RsvpExercise = () => {
         className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
       >
         <ArrowLeft size={20} />
-        До вибору вправ
+        {t('common.back')}
       </button>
 
       <div className="glass-card p-8">
@@ -328,9 +333,9 @@ const RsvpExercise = () => {
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
             <Eye size={32} className="text-primary" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">RSVP</h2>
+          <h2 className="text-2xl font-bold mb-2">{t('rsvp.title')}</h2>
           <p className="text-muted-foreground">
-            Слова з'являються по черзі із заданою швидкістю. Після читання — перевірка розуміння.
+            {t('rsvp.subtitle')}
           </p>
         </div>
 
@@ -338,7 +343,7 @@ const RsvpExercise = () => {
           {/* Syntagm width */}
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-3">
-              Ширина синтагми: <span className="text-primary font-bold text-lg">{syntagmWidth} {syntagmWidth === 1 ? 'слово' : syntagmWidth < 5 ? 'слова' : 'слів'}</span>
+              {t('rsvp.syntagmWidthLabel')} <span className="text-primary font-bold text-lg">{syntagmWidth} {t('rsvp.wordUnit', { count: syntagmWidth })}</span>
             </label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((n) => (
@@ -360,20 +365,20 @@ const RsvpExercise = () => {
           {/* Display time */}
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-3">
-              Час показу: <span className="text-accent font-bold text-lg">{displayTime} мс</span>
+              {t('rsvp.displayTime')}: <span className="text-accent font-bold text-lg">{displayTime} {t('common.ms')}</span>
             </label>
             <div className="flex gap-2 flex-wrap">
-              {[100, 200, 300, 500, 700, 1000].map((t) => (
+              {[100, 200, 300, 500, 700, 1000].map((time) => (
                 <button
-                  key={t}
-                  onClick={() => setDisplayTime(t)}
+                  key={time}
+                  onClick={() => setDisplayTime(time)}
                   className={`px-4 py-3 rounded-xl font-semibold transition-all ${
-                    displayTime === t
+                    displayTime === time
                       ? 'bg-accent text-accent-foreground'
                       : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
                   }`}
                 >
-                  {t >= 1000 ? `${t / 1000}с` : `${t}мс`}
+                  {time >= 1000 ? `${time / 1000}${t('common.seconds')}` : `${time}${t('common.ms')}`}
                 </button>
               ))}
             </div>
@@ -382,7 +387,7 @@ const RsvpExercise = () => {
           {/* Font size */}
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-3">
-              Розмір шрифта
+              {t('common.fontSize')}
             </label>
             <div className="flex gap-2">
               {FONT_SIZE_OPTIONS.map((opt) => (
@@ -404,11 +409,11 @@ const RsvpExercise = () => {
           {/* Text selection */}
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-3">
-              Оберіть текст
+              {t('rsvp.selectText')}
             </label>
             <div className="space-y-3">
               {textsLoading ? (
-                <p className="text-sm text-muted-foreground">Завантаження текстів...</p>
+                <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
               ) : texts.map((text) => (
                 <button
                   key={text.id}
@@ -419,7 +424,7 @@ const RsvpExercise = () => {
                     <div>
                       <h4 className="font-semibold group-hover:text-primary transition-colors">{text.title}</h4>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {text.content.split(/\s+/).length} слів · {text.questions.length} питань
+                        {text.content.split(/\s+/).length} {t('rsvp.wordUnit', { count: text.content.split(/\s+/).length })} · {text.questions.length}
                       </p>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full ${
@@ -427,7 +432,7 @@ const RsvpExercise = () => {
                       text.difficulty === 'medium' ? 'bg-accent/20 text-accent' :
                       'bg-destructive/20 text-destructive'
                     }`}>
-                      {text.difficulty === 'easy' ? 'Легко' : text.difficulty === 'medium' ? 'Середньо' : 'Складно'}
+                      {text.difficulty === 'easy' ? t('rsvp.difficultyEasy') : text.difficulty === 'medium' ? t('rsvp.difficultyMedium') : t('rsvp.difficultyHard')}
                     </span>
                   </div>
                 </button>
