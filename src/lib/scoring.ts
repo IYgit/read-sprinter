@@ -15,12 +15,24 @@ export function calcSchulteScore(durationMs: number, errors: number): number {
 
 /**
  * Числа:
- * 100 балів за вірну відповідь − штраф 2 бали/сек − штраф 20 балів/помилка
+ * base  = correctCount×100 − timePenalty(2 бали/сек) − errorPenalty(20 балів/помилка)
+ * score = round(base × (1 + difficultyFactor))
+ *
+ * difficultyFactor ∈ [0, 1]:
+ *   2000 мс (найлегше) → 0.0  →  множник ×1.0
+ *      1 мс (найважче) → 1.0  →  множник ×2.0
  */
-export function calcNumbersScore(correctCount: number, durationMs: number, errors: number): number {
-  const timePenalty  = Math.floor(durationMs / 1000) * 2;
-  const errorPenalty = errors * 20;
-  return Math.max(0, correctCount * 100 - timePenalty - errorPenalty);
+export function calcNumbersScore(
+  correctCount: number,
+  durationMs: number,
+  errors: number,
+  displayTime: number,
+): number {
+  const timePenalty      = Math.floor(durationMs / 1000) * 2;
+  const errorPenalty     = errors * 20;
+  const base             = Math.max(0, correctCount * 100 - timePenalty - errorPenalty);
+  const difficultyFactor = Math.max(0, Math.min(1, (2000 - displayTime) / 1999));
+  return Math.round(base * (1 + difficultyFactor));
 }
 
 /**

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ArrowLeft, Play, Settings, Trophy, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Play, Trophy, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { saveExerciseResult } from '@/lib/exerciseStats';
 import ExerciseStatsChart from '@/components/ExerciseStatsChart';
@@ -99,7 +99,7 @@ const NumbersExercise = () => {
       const newCorrect = newResults.filter(r => r.correct).length;
       const finalDuration = Date.now() - startTimeRef.current;
       setDurationMs(finalDuration);
-      const finalScore = calcNumbersScore(newCorrect, finalDuration, newResults.length - newCorrect);
+      const finalScore = calcNumbersScore(newCorrect, finalDuration, newResults.length - newCorrect, displayTime);
       setTimeout(async () => {
         await saveExerciseResult('numbers', finalScore);
         setPhase('results');
@@ -124,7 +124,7 @@ const NumbersExercise = () => {
   }, []);
 
   const correctCount = results.filter((r) => r.correct).length;
-  const score = calcNumbersScore(correctCount, durationMs, results.length - correctCount);
+  const score = calcNumbersScore(correctCount, durationMs, results.length - correctCount, displayTime);
   const accuracy = results.length > 0
     ? Math.round((correctCount / results.length) * 100)
     : 0;
@@ -192,7 +192,7 @@ const NumbersExercise = () => {
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-3">{t('numbers.displayTime')}: <span className="text-accent font-bold">{displayTime} {t('common.ms')}</span></label>
               <div className="flex gap-2 flex-wrap">
-                {[50, 100, 200, 300, 500, 700, 1000, 1500, 2000].map(ms => (
+                {[1, 5, 20, 30, 50, 100, 200, 300, 500, 700, 1000, 1500, 2000].map(ms => (
                   <button key={ms} onClick={() => setDisplayTime(ms)} className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${displayTime === ms ? 'bg-accent text-accent-foreground' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}>{ms < 1000 ? `${ms}${t('common.ms')}` : `${ms/1000}${t('common.seconds')}`}</button>
                 ))}
               </div>

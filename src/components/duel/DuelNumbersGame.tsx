@@ -108,7 +108,7 @@ const DuelNumbersGame = ({
 
       // Score considers both accuracy and speed.
       // +100 per correct answer, -20 per error, -2 per second spent.
-      const score = calcNumbersScore(newCorrect, finalMs, newErrors);
+      const score = calcNumbersScore(newCorrect, finalMs, newErrors, displayTime);
       onFinish(finalMs, newErrors, score, completedRounds);
 
       if (!hasSaved.current) {
