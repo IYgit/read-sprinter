@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+const BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000').replace(/\/$/, '');
 
 const ACCESS_TOKEN_KEY = 'rs_access_token';
 const REFRESH_TOKEN_KEY = 'rs_refresh_token';

@@ -4,7 +4,9 @@ import { getAccessToken, duelApi, type JoinQueueRequest } from '@/lib/api';
 
 // Native WebSocket URL — no SockJS needed with @stomp/stompjs v6+
 // Connect directly to /ws endpoint (no /websocket suffix — that's SockJS only).
-const WS_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000').replace(/^http/, 'ws');
+const WS_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:8000')
+  .replace(/\/$/, '')       // прибрати trailing slash спочатку
+  .replace(/^http/, 'ws');  // потім замінити протокол
 const WS_URL = `${WS_BASE}/ws`;
 
 export interface DuelEvent {
