@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    allowedHosts: ['web.api-cco.ngrok.app','localhost'],
+    allowedHosts: ['read-sprinter.onrender.com','web.api-cco.ngrok.app','localhost'],
     port: 3000,
     hmr: {
       overlay: false,

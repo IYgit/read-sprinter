@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "dev:ngrok": "vite --mode ngrok",
+    "dev:stg": "vite --mode stg",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "build:ngrok": "vite build --mode ngrok",
+    "build:stg": "vite build --mode stg",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
