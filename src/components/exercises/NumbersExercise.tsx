@@ -249,7 +249,7 @@ const NumbersExercise = () => {
             ref={inputRef}
             type="text"
             value={userInput}
-            onChange={(e) => setUserInput(e.target.value.replaceAll(/\D/g, ''))}
+            onChange={(e) => setUserInput(e.target.value.replace(/\D/g, ''))}
             onKeyDown={handleKeyDown}
             placeholder={t('numbers.enterNumber')}
             className="flex-1 h-12 rounded-xl bg-white/5 border border-white/10 px-4 text-foreground font-mono text-lg placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"

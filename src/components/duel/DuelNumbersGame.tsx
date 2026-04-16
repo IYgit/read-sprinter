@@ -246,7 +246,7 @@ const DuelNumbersGame = ({
               inputMode="numeric"
               pattern="[0-9]*"
               value={userInput}
-              onChange={(e) => setUserInput(e.target.value.replaceAll(/\D/g, ''))}
+              onChange={(e) => setUserInput(e.target.value.replace(/\D/g, ''))}
               onKeyDown={handleKeyDown}
               disabled={initialDelay || roundPhase !== 'input'}
               placeholder={t('numbers.enterNumber')}
