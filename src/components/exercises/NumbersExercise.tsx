@@ -71,8 +71,10 @@ const NumbersExercise = () => {
     setResults([]);
     setFeedback(null);
     setDurationMs(0);
-    startTimeRef.current = Date.now();
-    setTimeout(showNextNumber, 500);
+    setTimeout(() => {
+      startTimeRef.current = Date.now();
+      showNextNumber();
+    }, 1000);
   };
 
   const handleSubmit = () => {

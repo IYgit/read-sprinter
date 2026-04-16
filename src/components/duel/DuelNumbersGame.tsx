@@ -54,6 +54,7 @@ const DuelNumbersGame = ({
 
   const [round, setRound] = useState(0);           // current round index (0-based)
   const [roundPhase, setRoundPhase] = useState<RoundPhase>('showing');
+  const [initialDelay, setInitialDelay] = useState(true); // 1s pause before first number
   const [userInput, setUserInput] = useState('');
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
@@ -66,24 +67,30 @@ const DuelNumbersGame = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const hasSaved = useRef(false);
 
-  // Global elapsed timer
+  // Global elapsed timer — starts after the 1s initial delay
   useEffect(() => {
-    startTimeRef.current = Date.now();
-    timerRef.current = setInterval(() => {
-      setElapsed(Date.now() - startTimeRef.current);
-    }, 100);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    const delayTimer = setTimeout(() => {
+      setInitialDelay(false);
+      startTimeRef.current = Date.now();
+      timerRef.current = setInterval(() => {
+        setElapsed(Date.now() - startTimeRef.current);
+      }, 100);
+    }, 1000);
+    return () => {
+      clearTimeout(delayTimer);
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, []);
 
   // Auto-hide number after displayTime and focus input
   useEffect(() => {
-    if (roundPhase !== 'showing') return;
+    if (initialDelay || roundPhase !== 'showing') return;
     const t = setTimeout(() => {
       setRoundPhase('input');
       setTimeout(() => inputRef.current?.focus(), 80);
     }, displayTime);
     return () => clearTimeout(t);
-  }, [round, roundPhase, displayTime]);
+  }, [round, roundPhase, displayTime, initialDelay]);
 
   const handleSubmit = useCallback(() => {
     if (roundPhase !== 'input' || !userInput.trim()) return;
@@ -152,15 +159,18 @@ const DuelNumbersGame = ({
   const renderDisplayContent = () => (
     <div className={`min-h-[100px] flex items-center justify-center rounded-2xl border-2 border-dashed mb-6 transition-all duration-200 ${borderClass}`}>
       {finished && <span className="text-2xl font-bold text-success">{t('duel.finishedBanner')}</span>}
-      {!finished && roundPhase === 'showing' && (
+      {!finished && initialDelay && (
+        <span className="text-muted-foreground text-lg animate-pulse">{t('numbers.getReady')}</span>
+      )}
+      {!finished && !initialDelay && roundPhase === 'showing' && (
         <span className="font-mono font-bold text-primary tracking-widest text-5xl animate-fade-in-up">
           {currentNumber}
         </span>
       )}
-      {!finished && roundPhase !== 'showing' && feedback === 'correct' && (
+      {!finished && !initialDelay && roundPhase !== 'showing' && feedback === 'correct' && (
         <span className="text-2xl font-bold text-success">{t('numbers.correctFeedback')}</span>
       )}
-      {!finished && roundPhase !== 'showing' && feedback === 'incorrect' && (
+      {!finished && !initialDelay && roundPhase !== 'showing' && feedback === 'incorrect' && (
         <div className="text-center">
           <span className="text-xl font-bold text-destructive block">{t('numbers.incorrectFeedback')}</span>
           <span className="text-muted-foreground text-sm mt-1 block">
@@ -168,7 +178,7 @@ const DuelNumbersGame = ({
           </span>
         </div>
       )}
-      {!finished && roundPhase === 'input' && feedback == null && (
+      {!finished && !initialDelay && roundPhase === 'input' && feedback == null && (
         <span className="text-muted-foreground text-lg">{t('numbers.enterNumber')}</span>
       )}
     </div>
@@ -238,13 +248,13 @@ const DuelNumbersGame = ({
               value={userInput}
               onChange={(e) => setUserInput(e.target.value.replaceAll(/\D/g, ''))}
               onKeyDown={handleKeyDown}
-              disabled={roundPhase !== 'input'}
+              disabled={initialDelay || roundPhase !== 'input'}
               placeholder={t('numbers.enterNumber')}
               className="flex-1 px-6 py-4 rounded-xl bg-muted/50 border border-border text-center font-mono text-2xl tracking-widest focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-40"
             />
             <button
               onClick={handleSubmit}
-              disabled={roundPhase !== 'input' || !userInput.trim()}
+              disabled={initialDelay || roundPhase !== 'input' || !userInput.trim()}
               className="btn-primary px-6 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               OK

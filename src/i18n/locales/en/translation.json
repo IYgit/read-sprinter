@@ -103,6 +103,7 @@
     "displayTimeNumber": "Number display time",
     "round": "Round {{current}}/{{total}}",
     "enterNumber": "Enter number...",
+    "getReady": "Get ready...",
     "correctFeedback": "✓ Correct!",
     "incorrectFeedback": "✗ Incorrect",
     "correctAnswer": "Correct answer:",

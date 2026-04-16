@@ -103,6 +103,7 @@
     "displayTimeNumber": "Час показу числа",
     "round": "Раунд {{current}}/{{total}}",
     "enterNumber": "Введіть число...",
+    "getReady": "Приготуйтесь...",
     "correctFeedback": "✓ Правильно!",
     "incorrectFeedback": "✗ Неправильно",
     "correctAnswer": "Правильна відповідь:",
