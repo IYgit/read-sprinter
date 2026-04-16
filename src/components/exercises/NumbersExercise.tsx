@@ -194,7 +194,7 @@ const NumbersExercise = () => {
             <div>
               <label className="block text-sm font-medium text-muted-foreground mb-3">{t('numbers.displayTime')}: <span className="text-accent font-bold">{displayTime} {t('common.ms')}</span></label>
               <div className="flex gap-2 flex-wrap">
-                {[1, 5, 20, 30, 50, 100, 200, 300, 500, 700, 1000, 1500, 2000].map(ms => (
+                {[20, 30, 50, 100, 200, 300, 500, 700, 1000].map(ms => (
                   <button key={ms} onClick={() => setDisplayTime(ms)} className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${displayTime === ms ? 'bg-accent text-accent-foreground' : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'}`}>{ms < 1000 ? `${ms}${t('common.ms')}` : `${ms/1000}${t('common.seconds')}`}</button>
                 ))}
               </div>

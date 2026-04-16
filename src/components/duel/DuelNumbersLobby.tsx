@@ -8,7 +8,7 @@ interface DuelNumbersLobbyProps {
   onBack: () => void;
 }
 
-const DISPLAY_TIME_OPTIONS = [5, 20, 30, 50, 100, 200, 300, 500, 700, 1000];
+const DISPLAY_TIME_OPTIONS = [20, 30, 50, 100, 200, 300, 500, 700, 1000];
 
 const DuelNumbersLobby = ({ onStartSearch, onBack }: DuelNumbersLobbyProps) => {
   const [digitCount, setDigitCount] = useState(4);
