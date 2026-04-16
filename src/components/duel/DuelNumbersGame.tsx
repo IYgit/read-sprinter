@@ -152,7 +152,7 @@ const DuelNumbersGame = ({
   }
 
   let borderClass = 'border-border bg-card/30';
-  if (roundPhase === 'showing') borderClass = 'border-primary bg-primary/5';
+  if (roundPhase === 'showing') borderClass = 'border-primary bg-card/30';
   else if (feedback === 'correct') borderClass = 'border-success bg-success/5';
   else if (feedback === 'incorrect') borderClass = 'border-destructive bg-destructive/5';
 
@@ -163,7 +163,7 @@ const DuelNumbersGame = ({
         <span className="text-muted-foreground text-lg animate-pulse">{t('numbers.getReady')}</span>
       )}
       {!finished && !initialDelay && roundPhase === 'showing' && (
-        <span className="font-mono font-bold text-primary tracking-widest text-5xl animate-fade-in-up">
+        <span className="font-mono font-bold text-primary tracking-widest text-5xl">
           {currentNumber}
         </span>
       )}
