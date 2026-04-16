@@ -45,7 +45,9 @@ async function apiFetch<T>(path: string, options: RequestInit = {}, retry = true
       return apiFetch<T>(path, options, false);
     }
     clearTokens();
-    window.location.href = '/auth';
+    if (window.location.pathname !== '/auth') {
+      window.location.href = '/auth';
+    }
     throw new Error('Session expired');
   }
 
@@ -104,19 +106,19 @@ export const authApi = {
     apiFetch<AuthResponse>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({ username, email, password }),
-    }),
+    }, false),
 
   login: (email: string, password: string) =>
     apiFetch<AuthResponse>('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
-    }),
+    }, false),
 
   refresh: (refreshToken: string) =>
     apiFetch<AuthResponse>('/api/auth/refresh', {
       method: 'POST',
       body: JSON.stringify({ refreshToken }),
-    }),
+    }, false),
 };
 
 // ─── Texts ───────────────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { register, loginUser } from '@/lib/auth';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const AuthPage = () => {
@@ -11,19 +11,24 @@ const AuthPage = () => {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     const result = isRegister
       ? await register(login, password)
       : await loginUser(login, password);
 
+    setLoading(false);
+
     if (result.success) {
       navigate('/');
     } else {
-      setError(result.error || 'Помилка');
+      const key = result.error ?? 'auth.errors.unknown';
+      setError(t(key, { defaultValue: key }));
     }
   };
 
@@ -46,12 +51,13 @@ const AuthPage = () => {
           <div>
             <label className="block text-sm font-medium mb-1.5 text-foreground">{t('auth.loginLabel')}</label>
             <input
-              type="text"
+              type="email"
               value={login}
-              onChange={e => setLogin(e.target.value)}
+              onChange={e => { setLogin(e.target.value); setError(''); }}
               className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               placeholder={t('auth.loginPlaceholder')}
               maxLength={50}
+              autoComplete="email"
             />
           </div>
 
@@ -60,10 +66,11 @@ const AuthPage = () => {
             <input
               type="password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={e => { setPassword(e.target.value); setError(''); }}
               className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               placeholder={t('auth.passwordPlaceholder')}
               maxLength={100}
+              autoComplete={isRegister ? 'new-password' : 'current-password'}
             />
           </div>
 
@@ -75,10 +82,17 @@ const AuthPage = () => {
 
           <button
             type="submit"
-            className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+            disabled={loading}
+            className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isRegister ? <UserPlus size={18} /> : <LogIn size={18} />}
-            {isRegister ? t('auth.registerBtn') : t('auth.loginBtn')}
+            {loading
+              ? <Loader2 size={18} className="animate-spin" />
+              : isRegister ? <UserPlus size={18} /> : <LogIn size={18} />
+            }
+            {loading
+              ? t('auth.loading')
+              : isRegister ? t('auth.registerBtn') : t('auth.loginBtn')
+            }
           </button>
         </form>
 

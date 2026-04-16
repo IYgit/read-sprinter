@@ -31,9 +31,9 @@
   "auth": {
     "login": "Вхід",
     "register": "Реєстрація",
-    "loginLabel": "Логін",
+    "loginLabel": "Email",
     "passwordLabel": "Пароль",
-    "loginPlaceholder": "Введіть логін",
+    "loginPlaceholder": "Введіть email",
     "passwordPlaceholder": "Введіть пароль",
     "loginBtn": "Увійти",
     "registerBtn": "Зареєструватися",
@@ -41,7 +41,17 @@
     "continueTraining": "Увійдіть, щоб продовжити тренування",
     "haveAccount": "Вже є акаунт? Увійти",
     "noAccount": "Немає акаунту? Зареєструватися",
-    "error": "Помилка"
+    "error": "Помилка",
+    "loading": "Завантаження...",
+    "errors": {
+      "serverUnavailable": "Сервер недоступний. Спробуйте пізніше.",
+      "invalidCredentials": "Невірний логін або пароль. Спробуйте ще раз.",
+      "invalidEmail":       "Некоректна електронна адреса.",
+      "emailTaken":         "Такий email вже зареєстрований.",
+      "passwordTooShort":   "Пароль має містити щонайменше 6 символів.",
+      "emptyFields":        "Введіть логін та пароль.",
+      "unknown":            "Невідома помилка. Спробуйте пізніше."
+    }
   },
   "index": {
     "tagline": "Тренажер швидкочитання",

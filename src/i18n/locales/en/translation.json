@@ -31,9 +31,9 @@
   "auth": {
     "login": "Sign In",
     "register": "Sign Up",
-    "loginLabel": "Username",
+    "loginLabel": "Email",
     "passwordLabel": "Password",
-    "loginPlaceholder": "Enter username",
+    "loginPlaceholder": "Enter email",
     "passwordPlaceholder": "Enter password",
     "loginBtn": "Sign In",
     "registerBtn": "Create Account",
@@ -41,7 +41,17 @@
     "continueTraining": "Sign in to continue your training",
     "haveAccount": "Already have an account? Sign in",
     "noAccount": "No account? Sign up",
-    "error": "Error"
+    "error": "Error",
+    "loading": "Loading...",
+    "errors": {
+      "serverUnavailable": "Server unavailable. Please try again later.",
+      "invalidCredentials": "Invalid login or password. Please try again.",
+      "invalidEmail":       "Invalid email address.",
+      "emailTaken":         "This email is already registered.",
+      "passwordTooShort":   "Password must be at least 6 characters.",
+      "emptyFields":        "Please enter login and password.",
+      "unknown":            "Unknown error. Please try again later."
+    }
   },
   "index": {
     "tagline": "Speed Reading Trainer",

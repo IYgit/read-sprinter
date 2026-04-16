@@ -1,8 +1,30 @@
-import { authApi, setTokens, clearTokens, getAccessToken, type UserInfo } from './api';
+import { authApi, setTokens, clearTokens, getAccessToken, ApiError, type UserInfo } from './api';
 
-export type { UserInfo };
+export type { UserInfo } from './api';
 
 const CURRENT_USER_KEY = 'rs_current_user';
+
+// ─── Email validation ────────────────────────────────────────────────────────
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function isValidEmail(value: string): boolean {
+  return EMAIL_RE.test(value);
+}
+
+// ─── Error classifier ────────────────────────────────────────────────────────
+
+function classifyError(err: unknown): string {
+  if (err instanceof TypeError) {
+    // network error / server unreachable
+    return 'auth.errors.serverUnavailable';
+  }
+  if (err instanceof ApiError) {
+    if (err.status === 401) return 'auth.errors.invalidCredentials';
+    if (err.status === 409) return 'auth.errors.emailTaken';
+  }
+  return 'auth.errors.unknown';
+}
 
 // ─── Persist / read current user ─────────────────────────────────────────────
 
@@ -41,10 +63,13 @@ export async function register(
   password: string,
 ): Promise<{ success: boolean; error?: string }> {
   if (!login.trim() || !password.trim()) {
-    return { success: false, error: 'Логін та пароль не можуть бути порожніми' };
+    return { success: false, error: 'auth.errors.emptyFields' };
   }
   if (password.length < 6) {
-    return { success: false, error: 'Пароль має містити щонайменше 6 символів' };
+    return { success: false, error: 'auth.errors.passwordTooShort' };
+  }
+  if (login.includes('@') && !isValidEmail(login)) {
+    return { success: false, error: 'auth.errors.invalidEmail' };
   }
 
   const email = login.includes('@') ? login : `${login}@speedread.local`;
@@ -56,8 +81,7 @@ export async function register(
     saveCurrentUser(data.user);
     return { success: true };
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Помилка реєстрації';
-    return { success: false, error: message };
+    return { success: false, error: classifyError(err) };
   }
 }
 
@@ -73,7 +97,10 @@ export async function loginUser(
   password: string,
 ): Promise<{ success: boolean; error?: string }> {
   if (!login.trim() || !password.trim()) {
-    return { success: false, error: 'Введіть логін та пароль' };
+    return { success: false, error: 'auth.errors.emptyFields' };
+  }
+  if (login.includes('@') && !isValidEmail(login)) {
+    return { success: false, error: 'auth.errors.invalidEmail' };
   }
 
   const email = login.includes('@') ? login : `${login}@speedread.local`;
@@ -84,7 +111,6 @@ export async function loginUser(
     saveCurrentUser(data.user);
     return { success: true };
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Невірний логін або пароль';
-    return { success: false, error: message };
+    return { success: false, error: classifyError(err) };
   }
 }
