@@ -9,6 +9,7 @@ const AuthPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
   const [isRegister, setIsRegister] = useState(false);
+  const [username, setUsername] = useState('');
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,6 +24,7 @@ const AuthPage = () => {
       const timer = setTimeout(() => setVerifiedBanner(false), 5000);
       return () => clearTimeout(timer);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,7 +33,7 @@ const AuthPage = () => {
     setLoading(true);
 
     const result = isRegister
-      ? await register(login, password)
+      ? await register(username, login, password)
       : await loginUser(login, password);
 
     setLoading(false);
@@ -65,7 +67,7 @@ const AuthPage = () => {
             {t('auth.registerSuccessText')}
           </p>
           <button
-            onClick={() => { setRegistrationSuccess(false); setIsRegister(false); setLogin(''); setPassword(''); }}
+            onClick={() => { setRegistrationSuccess(false); setIsRegister(false); setUsername(''); setLogin(''); setPassword(''); }}
             className="text-sm text-primary hover:underline"
           >
             {t('auth.haveAccount')}
@@ -100,6 +102,20 @@ const AuthPage = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {isRegister && (
+            <div>
+              <label className="block text-sm font-medium mb-1.5 text-foreground">{t('auth.usernameLabel')}</label>
+              <input
+                type="text"
+                value={username}
+                onChange={e => { setUsername(e.target.value); setError(''); }}
+                className="w-full h-11 rounded-xl bg-white/5 border border-white/10 px-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder={t('auth.usernamePlaceholder')}
+                maxLength={50}
+                autoComplete="username"
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium mb-1.5 text-foreground">{t('auth.loginLabel')}</label>
             <input
@@ -150,7 +166,7 @@ const AuthPage = () => {
 
         <div className="mt-6 text-center">
           <button
-            onClick={() => { setIsRegister(!isRegister); setError(''); }}
+            onClick={() => { setIsRegister(!isRegister); setError(''); setUsername(''); }}
             className="text-sm text-primary hover:underline"
           >
             {isRegister ? t('auth.haveAccount') : t('auth.noAccount')}

@@ -60,21 +60,20 @@ export function logout(): void {
  * If the value looks like an email we use it directly.
  */
 export async function register(
-  login: string,
+  username: string,
+  email: string,
   password: string,
 ): Promise<{ success: boolean; pendingVerification?: boolean; error?: string }> {
-  if (!login.trim() || !password.trim()) {
+  if (!username.trim() || !email.trim() || !password.trim()) {
     return { success: false, error: 'auth.errors.emptyFields' };
   }
   if (password.length < 6) {
     return { success: false, error: 'auth.errors.passwordTooShort' };
   }
-  if (login.includes('@') && !isValidEmail(login)) {
+  if (!isValidEmail(email)) {
     return { success: false, error: 'auth.errors.invalidEmail' };
   }
 
-  const email = login.includes('@') ? login : `${login}@speedread.local`;
-  const username = login.includes('@') ? login.split('@')[0] : login;
 
   try {
     await authApi.register(username, email, password);
