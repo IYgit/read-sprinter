@@ -33,8 +33,10 @@
     "register": "Реєстрація",
     "loginLabel": "Email",
     "passwordLabel": "Пароль",
+    "usernameLabel": "Ім'я користувача",
     "loginPlaceholder": "Введіть email",
     "passwordPlaceholder": "Введіть пароль",
+    "usernamePlaceholder": "Введіть ім'я користувача",
     "loginBtn": "Увійти",
     "registerBtn": "Зареєструватися",
     "createAccount": "Створіть акаунт для тренувань",
@@ -50,8 +52,13 @@
       "emailTaken":         "Такий email вже зареєстрований.",
       "passwordTooShort":   "Пароль має містити щонайменше 6 символів.",
       "emptyFields":        "Введіть логін та пароль.",
+      "emailNotVerified":   "Будь ласка, підтвердіть email перед входом. Перевірте поштову скриньку.",
       "unknown":            "Невідома помилка. Спробуйте пізніше."
-    }
+    },
+    "registerSuccessTitle": "Перевірте пошту",
+    "registerSuccessText":  "Ми надіслали лист для підтвердження на вашу адресу. Перейдіть за посиланням у листі, щоб активувати акаунт.",
+    "emailVerifiedTitle": "Email підтверджено!",
+    "emailVerifiedText":  "Ваш акаунт активовано. Тепер ви можете увійти."
   },
   "index": {
     "tagline": "Тренажер швидкочитання",

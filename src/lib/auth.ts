@@ -21,6 +21,7 @@ function classifyError(err: unknown): string {
   }
   if (err instanceof ApiError) {
     if (err.status === 401) return 'auth.errors.invalidCredentials';
+    if (err.status === 403) return 'auth.errors.emailNotVerified';
     if (err.status === 409) return 'auth.errors.emailTaken';
   }
   return 'auth.errors.unknown';
@@ -59,27 +60,24 @@ export function logout(): void {
  * If the value looks like an email we use it directly.
  */
 export async function register(
-  login: string,
+  username: string,
+  email: string,
   password: string,
-): Promise<{ success: boolean; error?: string }> {
-  if (!login.trim() || !password.trim()) {
+): Promise<{ success: boolean; pendingVerification?: boolean; error?: string }> {
+  if (!username.trim() || !email.trim() || !password.trim()) {
     return { success: false, error: 'auth.errors.emptyFields' };
   }
   if (password.length < 6) {
     return { success: false, error: 'auth.errors.passwordTooShort' };
   }
-  if (login.includes('@') && !isValidEmail(login)) {
+  if (!isValidEmail(email)) {
     return { success: false, error: 'auth.errors.invalidEmail' };
   }
 
-  const email = login.includes('@') ? login : `${login}@speedread.local`;
-  const username = login.includes('@') ? login.split('@')[0] : login;
 
   try {
-    const data = await authApi.register(username, email, password);
-    setTokens(data.accessToken, data.refreshToken);
-    saveCurrentUser(data.user);
-    return { success: true };
+    await authApi.register(username, email, password);
+    return { success: true, pendingVerification: true };
   } catch (err: unknown) {
     return { success: false, error: classifyError(err) };
   }

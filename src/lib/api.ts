@@ -30,6 +30,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}, retry = true
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
     ...(options.headers as Record<string, string>),
   };
   if (accessToken) {
@@ -103,7 +104,7 @@ export interface UserInfo {
 
 export const authApi = {
   register: (username: string, email: string, password: string) =>
-    apiFetch<AuthResponse>('/api/auth/register', {
+    apiFetch<{ message: string }>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({ username, email, password }),
     }, false),
