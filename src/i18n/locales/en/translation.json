@@ -54,7 +54,9 @@
       "unknown":            "Unknown error. Please try again later."
     },
     "registerSuccessTitle": "Check your inbox",
-    "registerSuccessText":  "We sent a verification link to your email address. Click the link in the email to activate your account."
+    "registerSuccessText":  "We sent a verification link to your email address. Click the link in the email to activate your account.",
+    "emailVerifiedTitle": "Email verified!",
+    "emailVerifiedText":  "Your account is now active. You can sign in."
   },
   "index": {
     "tagline": "Speed Reading Trainer",

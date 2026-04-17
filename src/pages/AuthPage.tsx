@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { register, loginUser } from '@/lib/auth';
-import { LogIn, UserPlus, Loader2, MailCheck } from 'lucide-react';
+import { LogIn, UserPlus, Loader2, MailCheck, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
   const [isRegister, setIsRegister] = useState(false);
   const [login, setLogin] = useState('');
@@ -13,6 +14,16 @@ const AuthPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [verifiedBanner, setVerifiedBanner] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('verified') === 'true') {
+      setVerifiedBanner(true);
+      setSearchParams({}, { replace: true });
+      const timer = setTimeout(() => setVerifiedBanner(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +81,15 @@ const AuthPage = () => {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/20 rounded-full blur-[120px]" />
 
       <div className="relative glass-card w-full max-w-md p-8">
+        {verifiedBanner && (
+          <div className="mb-6 flex items-start gap-3 rounded-xl bg-green-500/10 border border-green-500/30 px-4 py-3 text-green-400 animate-fade-in">
+            <ShieldCheck size={20} className="mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold text-sm">{t('auth.emailVerifiedTitle')}</p>
+              <p className="text-xs text-green-400/80 mt-0.5">{t('auth.emailVerifiedText')}</p>
+            </div>
+          </div>
+        )}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gradient mb-2">
             {isRegister ? t('auth.register') : t('auth.login')}
