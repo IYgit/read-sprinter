@@ -30,6 +30,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}, retry = true
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
     ...(options.headers as Record<string, string>),
   };
   if (accessToken) {
