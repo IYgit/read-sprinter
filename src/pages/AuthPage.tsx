@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { register, loginUser } from '@/lib/auth';
-import { LogIn, UserPlus, Loader2 } from 'lucide-react';
+import { LogIn, UserPlus, Loader2, MailCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const AuthPage = () => {
@@ -12,6 +12,7 @@ const AuthPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,12 +26,43 @@ const AuthPage = () => {
     setLoading(false);
 
     if (result.success) {
-      navigate('/');
+      if ('pendingVerification' in result && result.pendingVerification) {
+        setRegistrationSuccess(true);
+      } else {
+        navigate('/');
+      }
     } else {
       const key = result.error ?? 'auth.errors.unknown';
       setError(t(key, { defaultValue: key }));
     }
   };
+
+  if (registrationSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/10" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/20 rounded-full blur-[120px]" />
+
+        <div className="relative glass-card w-full max-w-md p-8 text-center">
+          <div className="flex justify-center mb-4">
+            <MailCheck size={48} className="text-primary" />
+          </div>
+          <h2 className="text-2xl font-bold text-gradient mb-3">
+            {t('auth.registerSuccessTitle')}
+          </h2>
+          <p className="text-muted-foreground text-sm mb-6">
+            {t('auth.registerSuccessText')}
+          </p>
+          <button
+            onClick={() => { setRegistrationSuccess(false); setIsRegister(false); setLogin(''); setPassword(''); }}
+            className="text-sm text-primary hover:underline"
+          >
+            {t('auth.haveAccount')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">

@@ -104,7 +104,7 @@ export interface UserInfo {
 
 export const authApi = {
   register: (username: string, email: string, password: string) =>
-    apiFetch<AuthResponse>('/api/auth/register', {
+    apiFetch<{ message: string }>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify({ username, email, password }),
     }, false),

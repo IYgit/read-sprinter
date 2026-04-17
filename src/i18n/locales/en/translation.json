@@ -50,8 +50,11 @@
       "emailTaken":         "This email is already registered.",
       "passwordTooShort":   "Password must be at least 6 characters.",
       "emptyFields":        "Please enter login and password.",
+      "emailNotVerified":   "Please verify your email before signing in. Check your inbox.",
       "unknown":            "Unknown error. Please try again later."
-    }
+    },
+    "registerSuccessTitle": "Check your inbox",
+    "registerSuccessText":  "We sent a verification link to your email address. Click the link in the email to activate your account."
   },
   "index": {
     "tagline": "Speed Reading Trainer",

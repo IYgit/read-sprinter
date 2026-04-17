@@ -21,6 +21,7 @@ function classifyError(err: unknown): string {
   }
   if (err instanceof ApiError) {
     if (err.status === 401) return 'auth.errors.invalidCredentials';
+    if (err.status === 403) return 'auth.errors.emailNotVerified';
     if (err.status === 409) return 'auth.errors.emailTaken';
   }
   return 'auth.errors.unknown';
@@ -61,7 +62,7 @@ export function logout(): void {
 export async function register(
   login: string,
   password: string,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; pendingVerification?: boolean; error?: string }> {
   if (!login.trim() || !password.trim()) {
     return { success: false, error: 'auth.errors.emptyFields' };
   }
@@ -76,10 +77,8 @@ export async function register(
   const username = login.includes('@') ? login.split('@')[0] : login;
 
   try {
-    const data = await authApi.register(username, email, password);
-    setTokens(data.accessToken, data.refreshToken);
-    saveCurrentUser(data.user);
-    return { success: true };
+    await authApi.register(username, email, password);
+    return { success: true, pendingVerification: true };
   } catch (err: unknown) {
     return { success: false, error: classifyError(err) };
   }
